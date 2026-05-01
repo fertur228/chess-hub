@@ -14,7 +14,195 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      games: {
+        Row: {
+          ai_difficulty: string | null
+          black_rating_after: number | null
+          black_rating_before: number | null
+          black_user_id: string | null
+          black_username: string | null
+          coach_note: string | null
+          created_at: string
+          end_reason: string | null
+          game_type: string
+          id: string
+          key_moments: Json | null
+          moves_count: number
+          pgn: string | null
+          result: string
+          white_rating_after: number | null
+          white_rating_before: number | null
+          white_user_id: string | null
+          white_username: string | null
+        }
+        Insert: {
+          ai_difficulty?: string | null
+          black_rating_after?: number | null
+          black_rating_before?: number | null
+          black_user_id?: string | null
+          black_username?: string | null
+          coach_note?: string | null
+          created_at?: string
+          end_reason?: string | null
+          game_type: string
+          id?: string
+          key_moments?: Json | null
+          moves_count?: number
+          pgn?: string | null
+          result: string
+          white_rating_after?: number | null
+          white_rating_before?: number | null
+          white_user_id?: string | null
+          white_username?: string | null
+        }
+        Update: {
+          ai_difficulty?: string | null
+          black_rating_after?: number | null
+          black_rating_before?: number | null
+          black_user_id?: string | null
+          black_username?: string | null
+          coach_note?: string | null
+          created_at?: string
+          end_reason?: string | null
+          game_type?: string
+          id?: string
+          key_moments?: Json | null
+          moves_count?: number
+          pgn?: string | null
+          result?: string
+          white_rating_after?: number | null
+          white_rating_before?: number | null
+          white_user_id?: string | null
+          white_username?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          draws: number
+          games_played: number
+          goal: string | null
+          highest_rating: number
+          id: string
+          losses: number
+          onboarded: boolean
+          rating: number
+          skill_level: string | null
+          updated_at: string
+          user_id: string
+          username: string
+          wins: number
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          draws?: number
+          games_played?: number
+          goal?: string | null
+          highest_rating?: number
+          id?: string
+          losses?: number
+          onboarded?: boolean
+          rating?: number
+          skill_level?: string | null
+          updated_at?: string
+          user_id: string
+          username: string
+          wins?: number
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          draws?: number
+          games_played?: number
+          goal?: string | null
+          highest_rating?: number
+          id?: string
+          losses?: number
+          onboarded?: boolean
+          rating?: number
+          skill_level?: string | null
+          updated_at?: string
+          user_id?: string
+          username?: string
+          wins?: number
+        }
+        Relationships: []
+      }
+      rooms: {
+        Row: {
+          black_user_id: string | null
+          black_username: string | null
+          code: string
+          created_at: string
+          draw_offer_by: string | null
+          end_reason: string | null
+          fen: string
+          game_mode: string
+          guest_user_id: string | null
+          guest_username: string | null
+          host_color: string
+          host_user_id: string
+          host_username: string
+          id: string
+          pgn: string
+          result: string | null
+          status: string
+          time_control: string
+          updated_at: string
+          white_user_id: string | null
+          white_username: string | null
+        }
+        Insert: {
+          black_user_id?: string | null
+          black_username?: string | null
+          code: string
+          created_at?: string
+          draw_offer_by?: string | null
+          end_reason?: string | null
+          fen?: string
+          game_mode?: string
+          guest_user_id?: string | null
+          guest_username?: string | null
+          host_color?: string
+          host_user_id: string
+          host_username: string
+          id?: string
+          pgn?: string
+          result?: string | null
+          status?: string
+          time_control?: string
+          updated_at?: string
+          white_user_id?: string | null
+          white_username?: string | null
+        }
+        Update: {
+          black_user_id?: string | null
+          black_username?: string | null
+          code?: string
+          created_at?: string
+          draw_offer_by?: string | null
+          end_reason?: string | null
+          fen?: string
+          game_mode?: string
+          guest_user_id?: string | null
+          guest_username?: string | null
+          host_color?: string
+          host_user_id?: string
+          host_username?: string
+          id?: string
+          pgn?: string
+          result?: string | null
+          status?: string
+          time_control?: string
+          updated_at?: string
+          white_user_id?: string | null
+          white_username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
