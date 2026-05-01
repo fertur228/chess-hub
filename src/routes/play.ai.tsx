@@ -12,20 +12,20 @@ export const Route = createFileRoute("/play/ai")({
   component: () => <RequireAuth><AppShell><AISetup /></AppShell></RequireAuth>,
 });
 
-const difficulties = [
+const difficulties: { id: "Easy" | "Medium" | "Hard"; desc: string; recommended?: boolean }[] = [
   { id: "Easy", desc: "Good for beginners.", recommended: true },
   { id: "Medium", desc: "For users who know the rules." },
   { id: "Hard", desc: "More challenging practice." },
 ];
-const colors = [{ id: "white", label: "White" }, { id: "random", label: "Random" }, { id: "black", label: "Black" }];
+const colors: { id: "white" | "black" | "random"; label: string }[] = [{ id: "white", label: "White" }, { id: "random", label: "Random" }, { id: "black", label: "Black" }];
 
 function AISetup() {
   const navigate = useNavigate();
-  const [diff, setDiff] = useState("Easy");
-  const [color, setColor] = useState("white");
+  const [diff, setDiff] = useState<"Easy" | "Medium" | "Hard">("Easy");
+  const [color, setColor] = useState<"white" | "black" | "random">("white");
 
   const start = () => {
-    const c = color === "random" ? (Math.random() < 0.5 ? "white" : "black") : color;
+    const c: "white" | "black" = color === "random" ? (Math.random() < 0.5 ? "white" : "black") : color;
     navigate({ to: "/game/ai", search: { difficulty: diff, color: c } });
   };
 
