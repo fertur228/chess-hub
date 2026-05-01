@@ -21,11 +21,11 @@ const colors = [{ id: "white", label: "White" }, { id: "random", label: "Random"
 
 function AISetup() {
   const navigate = useNavigate();
-  const [diff, setDiff] = useState("Easy");
-  const [color, setColor] = useState("white");
+  const [diff, setDiff] = useState<"Easy" | "Medium" | "Hard">("Easy");
+  const [color, setColor] = useState<"white" | "black" | "random">("white");
 
   const start = () => {
-    const c = color === "random" ? (Math.random() < 0.5 ? "white" : "black") : color;
+    const c: "white" | "black" = color === "random" ? (Math.random() < 0.5 ? "white" : "black") : color;
     navigate({ to: "/game/ai", search: { difficulty: diff, color: c } });
   };
 
