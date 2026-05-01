@@ -23,7 +23,10 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
+import { Route as PlayJoinRouteImport } from './routes/play.join'
+import { Route as PlayCreateRouteImport } from './routes/play.create'
 import { Route as PlayAiRouteImport } from './routes/play.ai'
+import { Route as GameAiRouteImport } from './routes/game.ai'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -95,10 +98,25 @@ const ProfileEditRoute = ProfileEditRouteImport.update({
   path: '/edit',
   getParentRoute: () => ProfileRoute,
 } as any)
+const PlayJoinRoute = PlayJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => PlayRoute,
+} as any)
+const PlayCreateRoute = PlayCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => PlayRoute,
+} as any)
 const PlayAiRoute = PlayAiRouteImport.update({
   id: '/ai',
   path: '/ai',
   getParentRoute: () => PlayRoute,
+} as any)
+const GameAiRoute = GameAiRouteImport.update({
+  id: '/game/ai',
+  path: '/game/ai',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -114,7 +132,10 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
+  '/play/create': typeof PlayCreateRoute
+  '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
   '/u/$username': typeof UUsernameRoute
 }
@@ -131,7 +152,10 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
+  '/play/create': typeof PlayCreateRoute
+  '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
   '/u/$username': typeof UUsernameRoute
 }
@@ -149,7 +173,10 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
+  '/play/create': typeof PlayCreateRoute
+  '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
   '/u/$username': typeof UUsernameRoute
 }
@@ -168,7 +195,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/signup'
+    | '/game/ai'
     | '/play/ai'
+    | '/play/create'
+    | '/play/join'
     | '/profile/edit'
     | '/u/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -185,7 +215,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/signup'
+    | '/game/ai'
     | '/play/ai'
+    | '/play/create'
+    | '/play/join'
     | '/profile/edit'
     | '/u/$username'
   id:
@@ -202,7 +235,10 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/signup'
+    | '/game/ai'
     | '/play/ai'
+    | '/play/create'
+    | '/play/join'
     | '/profile/edit'
     | '/u/$username'
   fileRoutesById: FileRoutesById
@@ -220,6 +256,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  GameAiRoute: typeof GameAiRoute
   UUsernameRoute: typeof UUsernameRoute
 }
 
@@ -323,6 +360,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileEditRouteImport
       parentRoute: typeof ProfileRoute
     }
+    '/play/join': {
+      id: '/play/join'
+      path: '/join'
+      fullPath: '/play/join'
+      preLoaderRoute: typeof PlayJoinRouteImport
+      parentRoute: typeof PlayRoute
+    }
+    '/play/create': {
+      id: '/play/create'
+      path: '/create'
+      fullPath: '/play/create'
+      preLoaderRoute: typeof PlayCreateRouteImport
+      parentRoute: typeof PlayRoute
+    }
     '/play/ai': {
       id: '/play/ai'
       path: '/ai'
@@ -330,15 +381,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayAiRouteImport
       parentRoute: typeof PlayRoute
     }
+    '/game/ai': {
+      id: '/game/ai'
+      path: '/game/ai'
+      fullPath: '/game/ai'
+      preLoaderRoute: typeof GameAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface PlayRouteChildren {
   PlayAiRoute: typeof PlayAiRoute
+  PlayCreateRoute: typeof PlayCreateRoute
+  PlayJoinRoute: typeof PlayJoinRoute
 }
 
 const PlayRouteChildren: PlayRouteChildren = {
   PlayAiRoute: PlayAiRoute,
+  PlayCreateRoute: PlayCreateRoute,
+  PlayJoinRoute: PlayJoinRoute,
 }
 
 const PlayRouteWithChildren = PlayRoute._addFileChildren(PlayRouteChildren)
@@ -367,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRouteWithChildren,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  GameAiRoute: GameAiRoute,
   UUsernameRoute: UUsernameRoute,
 }
 export const routeTree = rootRouteImport
