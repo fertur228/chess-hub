@@ -22,6 +22,8 @@ import { Route as DemoReviewRouteImport } from './routes/demo-review'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as RoomRoomIdRouteImport } from './routes/room.$roomId'
+import { Route as ReviewGameIdRouteImport } from './routes/review.$gameId'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PlayJoinRouteImport } from './routes/play.join'
 import { Route as PlayCreateRouteImport } from './routes/play.create'
@@ -93,6 +95,16 @@ const UUsernameRoute = UUsernameRouteImport.update({
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RoomRoomIdRoute = RoomRoomIdRouteImport.update({
+  id: '/room/$roomId',
+  path: '/room/$roomId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewGameIdRoute = ReviewGameIdRouteImport.update({
+  id: '/review/$gameId',
+  path: '/review/$gameId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileEditRoute = ProfileEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -137,6 +149,8 @@ export interface FileRoutesByFullPath {
   '/play/create': typeof PlayCreateRoute
   '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/review/$gameId': typeof ReviewGameIdRoute
+  '/room/$roomId': typeof RoomRoomIdRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesByTo {
@@ -157,6 +171,8 @@ export interface FileRoutesByTo {
   '/play/create': typeof PlayCreateRoute
   '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/review/$gameId': typeof ReviewGameIdRoute
+  '/room/$roomId': typeof RoomRoomIdRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRoutesById {
@@ -178,6 +194,8 @@ export interface FileRoutesById {
   '/play/create': typeof PlayCreateRoute
   '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
+  '/review/$gameId': typeof ReviewGameIdRoute
+  '/room/$roomId': typeof RoomRoomIdRoute
   '/u/$username': typeof UUsernameRoute
 }
 export interface FileRouteTypes {
@@ -200,6 +218,8 @@ export interface FileRouteTypes {
     | '/play/create'
     | '/play/join'
     | '/profile/edit'
+    | '/review/$gameId'
+    | '/room/$roomId'
     | '/u/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -220,6 +240,8 @@ export interface FileRouteTypes {
     | '/play/create'
     | '/play/join'
     | '/profile/edit'
+    | '/review/$gameId'
+    | '/room/$roomId'
     | '/u/$username'
   id:
     | '__root__'
@@ -240,6 +262,8 @@ export interface FileRouteTypes {
     | '/play/create'
     | '/play/join'
     | '/profile/edit'
+    | '/review/$gameId'
+    | '/room/$roomId'
     | '/u/$username'
   fileRoutesById: FileRoutesById
 }
@@ -257,6 +281,8 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   GameAiRoute: typeof GameAiRoute
+  ReviewGameIdRoute: typeof ReviewGameIdRoute
+  RoomRoomIdRoute: typeof RoomRoomIdRoute
   UUsernameRoute: typeof UUsernameRoute
 }
 
@@ -353,6 +379,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/room/$roomId': {
+      id: '/room/$roomId'
+      path: '/room/$roomId'
+      fullPath: '/room/$roomId'
+      preLoaderRoute: typeof RoomRoomIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review/$gameId': {
+      id: '/review/$gameId'
+      path: '/review/$gameId'
+      fullPath: '/review/$gameId'
+      preLoaderRoute: typeof ReviewGameIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/edit': {
       id: '/profile/edit'
       path: '/edit'
@@ -430,6 +470,8 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   GameAiRoute: GameAiRoute,
+  ReviewGameIdRoute: ReviewGameIdRoute,
+  RoomRoomIdRoute: RoomRoomIdRoute,
   UUsernameRoute: UUsernameRoute,
 }
 export const routeTree = rootRouteImport
