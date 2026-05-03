@@ -21,11 +21,14 @@ import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DemoReviewRouteImport } from './routes/demo-review'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
+import { Route as PlayIndexRouteImport } from './routes/play.index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as RoomRoomIdRouteImport } from './routes/room.$roomId'
 import { Route as ReviewGameIdRouteImport } from './routes/review.$gameId'
 import { Route as ProfileEditRouteImport } from './routes/profile.edit'
 import { Route as PlayJoinRouteImport } from './routes/play.join'
+import { Route as PlayFindRouteImport } from './routes/play.find'
 import { Route as PlayCreateRouteImport } from './routes/play.create'
 import { Route as PlayAiRouteImport } from './routes/play.ai'
 import { Route as GameAiRouteImport } from './routes/game.ai'
@@ -90,6 +93,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const PlayIndexRoute = PlayIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PlayRoute,
+} as any)
 const UUsernameRoute = UUsernameRouteImport.update({
   id: '/u/$username',
   path: '/u/$username',
@@ -113,6 +126,11 @@ const ProfileEditRoute = ProfileEditRouteImport.update({
 const PlayJoinRoute = PlayJoinRouteImport.update({
   id: '/join',
   path: '/join',
+  getParentRoute: () => PlayRoute,
+} as any)
+const PlayFindRoute = PlayFindRouteImport.update({
+  id: '/find',
+  path: '/find',
   getParentRoute: () => PlayRoute,
 } as any)
 const PlayCreateRoute = PlayCreateRouteImport.update({
@@ -147,11 +165,14 @@ export interface FileRoutesByFullPath {
   '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
   '/play/create': typeof PlayCreateRoute
+  '/play/find': typeof PlayFindRoute
   '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
   '/review/$gameId': typeof ReviewGameIdRoute
   '/room/$roomId': typeof RoomRoomIdRoute
   '/u/$username': typeof UUsernameRoute
+  '/play/': typeof PlayIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -161,19 +182,20 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
-  '/play': typeof PlayRouteWithChildren
   '/pricing': typeof PricingRoute
-  '/profile': typeof ProfileRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
   '/play/create': typeof PlayCreateRoute
+  '/play/find': typeof PlayFindRoute
   '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
   '/review/$gameId': typeof ReviewGameIdRoute
   '/room/$roomId': typeof RoomRoomIdRoute
   '/u/$username': typeof UUsernameRoute
+  '/play': typeof PlayIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -192,11 +214,14 @@ export interface FileRoutesById {
   '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
   '/play/create': typeof PlayCreateRoute
+  '/play/find': typeof PlayFindRoute
   '/play/join': typeof PlayJoinRoute
   '/profile/edit': typeof ProfileEditRoute
   '/review/$gameId': typeof ReviewGameIdRoute
   '/room/$roomId': typeof RoomRoomIdRoute
   '/u/$username': typeof UUsernameRoute
+  '/play/': typeof PlayIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -216,11 +241,14 @@ export interface FileRouteTypes {
     | '/game/ai'
     | '/play/ai'
     | '/play/create'
+    | '/play/find'
     | '/play/join'
     | '/profile/edit'
     | '/review/$gameId'
     | '/room/$roomId'
     | '/u/$username'
+    | '/play/'
+    | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -230,19 +258,20 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/login'
     | '/onboarding'
-    | '/play'
     | '/pricing'
-    | '/profile'
     | '/settings'
     | '/signup'
     | '/game/ai'
     | '/play/ai'
     | '/play/create'
+    | '/play/find'
     | '/play/join'
     | '/profile/edit'
     | '/review/$gameId'
     | '/room/$roomId'
     | '/u/$username'
+    | '/play'
+    | '/profile'
   id:
     | '__root__'
     | '/'
@@ -260,11 +289,14 @@ export interface FileRouteTypes {
     | '/game/ai'
     | '/play/ai'
     | '/play/create'
+    | '/play/find'
     | '/play/join'
     | '/profile/edit'
     | '/review/$gameId'
     | '/room/$roomId'
     | '/u/$username'
+    | '/play/'
+    | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -372,6 +404,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/play/': {
+      id: '/play/'
+      path: '/'
+      fullPath: '/play/'
+      preLoaderRoute: typeof PlayIndexRouteImport
+      parentRoute: typeof PlayRoute
+    }
     '/u/$username': {
       id: '/u/$username'
       path: '/u/$username'
@@ -407,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlayJoinRouteImport
       parentRoute: typeof PlayRoute
     }
+    '/play/find': {
+      id: '/play/find'
+      path: '/find'
+      fullPath: '/play/find'
+      preLoaderRoute: typeof PlayFindRouteImport
+      parentRoute: typeof PlayRoute
+    }
     '/play/create': {
       id: '/play/create'
       path: '/create'
@@ -434,23 +487,29 @@ declare module '@tanstack/react-router' {
 interface PlayRouteChildren {
   PlayAiRoute: typeof PlayAiRoute
   PlayCreateRoute: typeof PlayCreateRoute
+  PlayFindRoute: typeof PlayFindRoute
   PlayJoinRoute: typeof PlayJoinRoute
+  PlayIndexRoute: typeof PlayIndexRoute
 }
 
 const PlayRouteChildren: PlayRouteChildren = {
   PlayAiRoute: PlayAiRoute,
   PlayCreateRoute: PlayCreateRoute,
+  PlayFindRoute: PlayFindRoute,
   PlayJoinRoute: PlayJoinRoute,
+  PlayIndexRoute: PlayIndexRoute,
 }
 
 const PlayRouteWithChildren = PlayRoute._addFileChildren(PlayRouteChildren)
 
 interface ProfileRouteChildren {
   ProfileEditRoute: typeof ProfileEditRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 const ProfileRouteChildren: ProfileRouteChildren = {
   ProfileEditRoute: ProfileEditRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
 }
 
 const ProfileRouteWithChildren =

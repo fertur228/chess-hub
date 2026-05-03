@@ -15,19 +15,22 @@ export const Route = createFileRoute("/login")({
 
 function Login() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (user) navigate({ to: "/dashboard" }); }, [user, navigate]);
+  useEffect(() => {
+    if (loading || !user) return;
+    navigate({ to: profile?.onboarded === false ? "/onboarding" : "/dashboard" });
+  }, [loading, user, profile, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password: pwd });
     setBusy(false);
-    if (error) { toast.error("Invalid email or password"); return; }
+    if (error) { toast.error(error.message || "Invalid email or password"); return; }
     toast.success("Welcome back!");
     navigate({ to: "/dashboard" });
   };

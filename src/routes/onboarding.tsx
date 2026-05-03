@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { RequireAuth } from "@/components/require-auth";
 import { AppShell } from "@/components/app-shell";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { Sparkles, Check } from "lucide-react";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Welcome — ChessCoach Arena" }] }),
-  component: () => <RequireAuth><AppShell><Onboarding /></AppShell></RequireAuth>,
+  component: () => <RequireAuth requireOnboarded={false}><AppShell><Onboarding /></AppShell></RequireAuth>,
 });
 
 const levels = [
@@ -29,18 +29,28 @@ const goals = [
 
 function Onboarding() {
   const navigate = useNavigate();
-  const { user, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
   const [level, setLevel] = useState<string>("");
   const [goal, setGoal] = useState<string>("");
 
+  useEffect(() => {
+    if (!loading && profile?.onboarded) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [loading, profile, navigate]);
+
   const finish = async (skip = false) => {
     if (!user) return;
-    await supabase.from("profiles").update({
-      skill_level: skip ? null : level,
-      goal: skip ? null : goal,
-      onboarded: true,
-    }).eq("user_id", user.id);
+    const { error } = await supabase.rpc("update_my_profile", {
+      p_skill_level: skip ? undefined : level,
+      p_goal: skip ? undefined : goal,
+      p_onboarded: true,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await refreshProfile();
     toast.success("All set! Let's play.");
     navigate({ to: "/dashboard" });

@@ -15,14 +15,17 @@ export const Route = createFileRoute("/signup")({
 
 function SignUp() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [pwd, setPwd] = useState("");
   const [pwd2, setPwd2] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (user) navigate({ to: "/dashboard" }); }, [user, navigate]);
+  useEffect(() => {
+    if (loading || !user) return;
+    navigate({ to: profile?.onboarded === false ? "/onboarding" : "/dashboard" });
+  }, [loading, user, profile, navigate]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +33,7 @@ function SignUp() {
     if (pwd.length < 6) { toast.error("Password must be at least 6 characters"); return; }
     if (username.length < 3) { toast.error("Username must be at least 3 characters"); return; }
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email, password: pwd,
       options: {
         emailRedirectTo: `${window.location.origin}/dashboard`,
@@ -39,6 +42,11 @@ function SignUp() {
     });
     setBusy(false);
     if (error) { toast.error(error.message); return; }
+    if (!data.session) {
+      toast.success("Account created. Check your email to confirm before logging in.");
+      navigate({ to: "/login" });
+      return;
+    }
     toast.success("Account created!");
     navigate({ to: "/onboarding" });
   };

@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Swords, Bot, History, Trophy, User, Settings, LogOut, Menu, Crown } from "lucide-react";
@@ -18,6 +18,14 @@ const nav = [
 function SidebarContent({ onNav }: { onNav?: () => void }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    onNav?.();
+    navigate({ to: "/login" });
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-2 px-5 py-5 border-b">
@@ -59,7 +67,7 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
             </div>
           </div>
         )}
-        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={signOut}>
+        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={handleSignOut}>
           <LogOut className="h-4 w-4 mr-2" /> Sign out
         </Button>
       </div>

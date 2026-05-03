@@ -40,16 +40,38 @@ export function gameForUser(g: Game, uid: string) {
 }
 
 function Dashboard() {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [games, setGames] = useState<Game[] | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setGames([]);
+      return;
+    }
     supabase.from("games").select("*").or(`white_user_id.eq.${user.id},black_user_id.eq.${user.id}`)
-      .order("created_at", { ascending: false }).limit(5).then(({ data }) => setGames((data || []) as Game[]));
+      .order("created_at", { ascending: false }).limit(5).then(({ data, error }) => {
+        if (error) {
+          console.error("[Dashboard] Failed to load recent games", error);
+          setGames([]);
+          return;
+        }
+        setGames((data || []) as Game[]);
+      });
   }, [user]);
 
-  if (!profile) return null;
+  if (loading || !profile || !user) {
+    return (
+      <PageContainer>
+        <div className="space-y-6">
+          <Skeleton className="h-10 w-64" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28 w-full" />)}
+          </div>
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </PageContainer>
+    );
+  }
 
   const winRate = profile.games_played > 0 ? Math.round((profile.wins / profile.games_played) * 100) : 0;
   const lastRanked = games?.find((g) => g.game_type === "Ranked");
@@ -88,7 +110,7 @@ function Dashboard() {
             <EmptyState icon={<Swords className="h-5 w-5" />} title="You have not played any games yet"
               description="Start your first match to build your chess profile." action={<Button asChild><Link to="/play/ai">Play first game</Link></Button>} />
           ) : (
-            <div className="space-y-2">{games.map((g) => <GameRow key={g.id} g={g} uid={user!.id} />)}</div>
+            <div className="space-y-2">{games.map((g) => <GameRow key={g.id} g={g} uid={user.id} />)}</div>
           )}
         </div>
 

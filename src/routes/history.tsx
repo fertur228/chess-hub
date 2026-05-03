@@ -26,9 +26,26 @@ function HistoryPage() {
   const [filter, setFilter] = useState<Filter>("All");
 
   useEffect(() => {
-    if (!user) return;
-    supabase.from("games").select("*").or(`white_user_id.eq.${user.id},black_user_id.eq.${user.id}`)
-      .order("created_at", { ascending: false }).limit(100).then(({ data }) => setGames(data || []));
+    if (!user) {
+      setGames([]);
+      return;
+    }
+    let active = true;
+    setGames(null);
+    supabase
+      .from("games")
+      .select("*")
+      .or(`white_user_id.eq.${user.id},black_user_id.eq.${user.id}`)
+      .order("created_at", { ascending: false })
+      .limit(100)
+      .then(({ data, error }) => {
+        if (!active) return;
+        if (error) console.error("[History] Failed to load games", error);
+        setGames(error ? [] : data || []);
+      });
+    return () => {
+      active = false;
+    };
   }, [user]);
 
   const filtered = (games || []).filter((g) => {

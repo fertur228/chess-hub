@@ -1,6 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { RequireAuth } from "@/components/require-auth";
-import { AppShell } from "@/components/app-shell";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { useAuth } from "@/lib/auth";
 import { useState, useEffect } from "react";
@@ -11,8 +9,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/edit")({
-  head: () => ({ meta: [{ title: "Edit profile — ChessCoach Arena" }] }),
-  component: () => <RequireAuth><AppShell><EditProfile /></AppShell></RequireAuth>,
+  head: () => ({ meta: [{ title: "Edit profile - ChessCoach Arena" }] }),
+  component: EditProfile,
 });
 
 function EditProfile() {
@@ -31,7 +29,11 @@ function EditProfile() {
     e.preventDefault();
     if (!user) return;
     setBusy(true);
-    const { error } = await supabase.from("profiles").update({ username, skill_level: skill || null, goal: goal || null }).eq("user_id", user.id);
+    const { error } = await supabase.rpc("update_my_profile", {
+      p_username: username,
+      p_skill_level: skill || undefined,
+      p_goal: goal || undefined,
+    });
     setBusy(false);
     if (error) {
       if (error.code === "23505") toast.error("That username is already taken");

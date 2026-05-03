@@ -1,6 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { RequireAuth } from "@/components/require-auth";
-import { AppShell } from "@/components/app-shell";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -9,7 +7,7 @@ import { Check } from "lucide-react";
 
 export const Route = createFileRoute("/play/ai")({
   head: () => ({ meta: [{ title: "Train against Coach Bot — ChessCoach Arena" }] }),
-  component: () => <RequireAuth><AppShell><AISetup /></AppShell></RequireAuth>,
+  component: AISetup,
 });
 
 const difficulties: { id: "Easy" | "Medium" | "Hard"; desc: string; recommended?: boolean }[] = [
@@ -67,7 +65,9 @@ function AISetup() {
           AI games are training games. They do not affect your online rating.
         </div>
 
-        <Button size="lg" onClick={start}>Start AI game</Button>
+        <Button type="button" size="lg" onClick={start}>
+          Start AI game
+        </Button>
       </div>
     </PageContainer>
   );

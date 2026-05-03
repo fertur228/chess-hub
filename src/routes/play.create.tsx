@@ -1,6 +1,4 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { RequireAuth } from "@/components/require-auth";
-import { AppShell } from "@/components/app-shell";
 import { PageContainer, PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -9,17 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateRoomCode } from "@/lib/chess-helpers";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/play/create")({
   head: () => ({ meta: [{ title: "Create room — ChessCoach Arena" }] }),
-  component: () => <RequireAuth><AppShell><CreateRoom /></AppShell></RequireAuth>,
+  component: CreateRoom,
 });
 
 function CreateRoom() {
   const { user, profile } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"casual" | "ranked">("casual");
   const [color, setColor] = useState<"white" | "black" | "random">("random");
   const [busy, setBusy] = useState(false);
 
@@ -28,7 +25,7 @@ function CreateRoom() {
     setBusy(true);
     const code = generateRoomCode();
     const { data, error } = await supabase.from("rooms").insert({
-      code, host_user_id: user.id, host_username: profile.username, host_color: color, game_mode: mode,
+      code, host_user_id: user.id, host_username: profile.username, host_color: color, game_mode: "casual", visibility: "private",
     }).select("id").single();
     setBusy(false);
     if (error || !data) { toast.error("Could not create room"); return; }
@@ -37,13 +34,13 @@ function CreateRoom() {
 
   return (
     <PageContainer>
-      <PageHeader title="Create online room" subtitle="Set up your game and invite a friend." />
+      <PageHeader title="Create private room" subtitle="Private rooms are casual and do not affect rating." />
       <div className="card-surface p-6 md:p-8 max-w-2xl space-y-6">
-        <div>
-          <div className="font-semibold text-sm mb-2">Game mode</div>
-          <div className="grid grid-cols-2 gap-2">
-            <Pick active={mode === "casual"} onClick={() => setMode("casual")} label="Casual" sub="Does not affect rating" />
-            <Pick active={mode === "ranked"} onClick={() => setMode("ranked")} label="Ranked" sub="Affects your rating" />
+        <div className="rounded-lg border bg-muted/40 p-4 flex gap-3">
+          <ShieldCheck className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <div className="font-semibold">Casual private room</div>
+            <p className="text-sm text-muted-foreground mt-1">Private rooms are casual and do not affect rating.</p>
           </div>
         </div>
 
