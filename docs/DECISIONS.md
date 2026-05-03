@@ -446,3 +446,28 @@ Private rooms are useful for friends, teaching, and quick games by code, but all
 - Friends can still play privately, but those games do not affect rating.
 - Ranked games continue to use the existing server-side finalization and rating logic.
 - Public matchmaking reduces easy rating farming but does not fully prevent coordinated queue abuse.
+
+## ADR-0020: Draw offers — trusted RPCs only; shared finalization impl
+
+### Status
+
+Accepted
+
+### Context
+
+Players need a draw-by-agreement flow online. Draw affects `rooms`, `games`, profile counters, and ranked Elo. Client-side `rooms` updates are disallowed after Phase 5C; Edge Functions already finalize finished games via `finalize_online_room`, which intentionally rejects `authenticated` callers so users cannot finalize from the browser.
+
+### Decision
+
+- Reuse existing column `rooms.draw_offer_by` (nullable UUID).
+- Add **`public.offer_draw(p_room_id uuid)`** and **`public.respond_draw_offer(p_room_id uuid, p_accept boolean)`**: both **SECURITY DEFINER**, **`SET search_path = public`**, row lock **`FOR UPDATE`**, participant and `status = playing` checks.
+- **Accept** sets `status = finished`, `result = draw`, `end_reason = draw_agreement`, clears `draw_offer_by`, then calls **`finalize_online_room_impl`**, containing the previous `finalize_online_room` body without JWT checks.
+- **`finalize_online_room`** remains a thin wrapper: reject `authenticated` / `anon`; **`GRANT EXECUTE` → `service_role` only**; delegates to **`finalize_online_room_impl`**. Edge Functions unchanged.
+- **`finalize_online_room_impl`**: **no `GRANT`** to `authenticated` / `anon` / `PUBLIC`; callable only from other definer functions in SQL.
+- **Before-update trigger** on **`rooms`**: while **`playing`**, if **`fen`** changes, clear **`draw_offer_by`** so a normal move cancels a pending offer (including updates from **`record-move`**).
+
+### Consequences
+
+- Browser uses **`supabase.rpc` only** for draw; no **`from('rooms').update`** for draw state.
+- Ranked draws still use the same Elo and **`rating_events`** rules inside **`finalize_online_room_impl`** (half-point scores); casual draws update counters only.
+- Idempotency for finished rooms remains **`finalized_at` / `source_room_id`** as before.

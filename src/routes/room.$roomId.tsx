@@ -258,10 +258,19 @@ function WaitingRoom({ room }: { room: any }) {
   );
 }
 
+function mapDrawRpcError(message: string): string {
+  if (message.includes("DRAW_OFFER_RESPOND_FIRST")) return "Your opponent offered a draw — accept or decline first.";
+  if (message.includes("DRAW_OFFER_INVALID_STATE")) return "Draw offer is not available in this room state.";
+  if (message.includes("DRAW_OFFER_NONE")) return "There is no pending draw offer.";
+  if (message.includes("DRAW_OFFER_CANNOT_ACCEPT_OWN")) return "You cannot accept your own draw offer.";
+  return message;
+}
+
 function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile }: any) {
   const chessRef = useRef(new Chess());
   const [, force] = useState(0);
   const [thinking, setThinking] = useState(false);
+  const [drawBusy, setDrawBusy] = useState(false);
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const allowNavigationRef = useRef(false);
 
@@ -368,6 +377,42 @@ function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile
     await refreshProfile();
   };
 
+  const drawOfferBy: string | null = room.draw_offer_by ?? null;
+  const myDrawOfferSent = drawOfferBy === user.id;
+  const opponentDrawOffer = !!drawOfferBy && drawOfferBy !== user.id;
+
+  const offerDraw = async () => {
+    if (isOver || drawBusy || thinking || opponentDrawOffer || myDrawOfferSent) return;
+    setDrawBusy(true);
+    const { error } = await supabase.rpc("offer_draw", { p_room_id: room.id });
+    setDrawBusy(false);
+    if (error) {
+      toast.error(mapDrawRpcError(error.message));
+      return;
+    }
+    toast.success("Draw offer sent.");
+  };
+
+  const respondDraw = async (accept: boolean) => {
+    if (isOver || drawBusy || thinking || !opponentDrawOffer) return;
+    setDrawBusy(true);
+    const { error } = await supabase.rpc("respond_draw_offer", {
+      p_room_id: room.id,
+      p_accept: accept,
+    });
+    setDrawBusy(false);
+    if (error) {
+      toast.error(mapDrawRpcError(error.message));
+      return;
+    }
+    if (accept) {
+      toast.success("Draw accepted — game over.");
+      await refreshProfile();
+    } else {
+      toast.success("Draw offer declined.");
+    }
+  };
+
   const turnText = isOver ? "Game over" : (chessRef.current.inCheck() ? (myTurn ? "You are in check!" : "Opponent is in check") : (myTurn ? "Your move" : "Opponent's turn"));
   const history = chessRef.current.history();
   const lastMove = useMemo((): { from: Square; to: Square } | null => {
@@ -416,6 +461,14 @@ function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile
           <div className="card-surface p-4">
             <GameTypeBadge type={room.game_mode === "ranked" ? "Ranked" : "Casual"} />
             <div className="mt-3 font-semibold">{turnText}</div>
+            {isActiveGame && opponentDrawOffer && (
+              <p className="mt-2 text-sm text-amber-900 dark:text-amber-200/90 bg-amber-500/15 rounded-md px-3 py-2">
+                Opponent offered a draw. Accept or decline.
+              </p>
+            )}
+            {isActiveGame && myDrawOfferSent && !opponentDrawOffer && (
+              <p className="mt-2 text-sm text-muted-foreground">Draw offer sent — waiting for response.</p>
+            )}
           </div>
 
           <div className="card-surface p-4 max-h-48 overflow-auto">
@@ -429,6 +482,29 @@ function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile
             )}
           </div>
 
+          {isActiveGame && (
+            <div className="space-y-2">
+              {opponentDrawOffer ? (
+                <div className="grid grid-cols-2 gap-2">
+                  <Button onClick={() => void respondDraw(true)} disabled={drawBusy || thinking}>
+                    Accept draw
+                  </Button>
+                  <Button variant="outline" onClick={() => void respondDraw(false)} disabled={drawBusy || thinking}>
+                    Decline
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => void offerDraw()}
+                  disabled={drawBusy || thinking || myDrawOfferSent}
+                >
+                  {myDrawOfferSent ? "Draw offer sent" : "Offer draw"}
+                </Button>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" onClick={resign} disabled={isOver}>Resign</Button>
             <Button variant="ghost" asChild><Link to="/dashboard">Dashboard</Link></Button>
@@ -440,10 +516,12 @@ function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile
         <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="card-surface p-8 max-w-md w-full text-center">
             <div className="font-display text-3xl font-bold mb-2">
-              {draw ? "It's a draw" : myWon ? (room.end_reason === "resignation" ? "🎉 You won by resignation" : room.end_reason === "abandon" ? "🎉 You won because opponent left" : "🎉 You won!") : "Game over"}
+              {draw ? (room.end_reason === "draw_agreement" ? "Draw by agreement" : "It's a draw") : myWon ? (room.end_reason === "resignation" ? "🎉 You won by resignation" : room.end_reason === "abandon" ? "🎉 You won because opponent left" : "🎉 You won!") : "Game over"}
             </div>
             <p className="text-muted-foreground mb-4">
-              {room.end_reason === "resignation" && !myWon ? "You resigned" : 
+              {draw && room.end_reason === "draw_agreement"
+                ? "Both players agreed to a draw."
+                : room.end_reason === "resignation" && !myWon ? "You resigned" :
                room.end_reason === "abandon" && !myWon ? "You left the game" :
                room.end_reason === "resignation" && myWon ? "Opponent resigned" :
                room.end_reason === "abandon" && myWon ? "Opponent left the game" : room.end_reason}

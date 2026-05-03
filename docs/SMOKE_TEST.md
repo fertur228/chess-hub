@@ -230,3 +230,16 @@ Exercise in **AI** and **online** games; use a position where underpromotion is 
 6. **Online — opponent view:** After you select a piece, opponent (or second session) sees the **correct promoted piece** after sync.
 7. **Illegal / rejection:** Illegal moves still rejected; failed `record-move` rollback behavior unchanged.
 8. **Regression:** Non-promotion moves, **hints**, **last-move** tint, and **check** highlight behave as before when the dialog is not open.
+
+## Phase 8B: Draw offers (casual + ranked online)
+
+Requires migration **`20260506000000_phase_8b_draw_offers.sql`** applied. Two accounts + **`grep`/code review:** confirm **no** `from("rooms").update` for draw in **`src/`**.
+
+1. **Casual decline:** User A offers draw; User B declines → play continues; **`draw_offer_by`** null via Realtime/poll.
+2. **Casual accept:** Accept → **`status = finished`**, **`result = draw`**, **`end_reason = draw_agreement`**; profile **counters** (+games, +draws) **no rating** change.
+3. **Ranked accept:** Ranked game → accept draw → **`rating_events`** two rows, **half-point** Elo deltas; **`games`** one row; **no duplicate** on refresh/reopen (**`already_finalized`** / single **`game_id`**).
+4. **Own offer:** Caller cannot accept own offer (RPC error **DRAW_OFFER_CANNOT_ACCEPT_OWN**).
+5. **Move clears offer:** After offer, either player makes a legal move → **`draw_offer_by`** clears (trigger).
+6. **Respond-first:** While opponent’s offer is pending, offering again returns error; use Accept/Decline.
+
+**Optional:** Grep: `rg 'rooms.*\\.update|from\\([\"\\']rooms[\"\\']\\).*\\.update' src` — expect **no** matches for draw (none expected in app routes after Phase 5C).

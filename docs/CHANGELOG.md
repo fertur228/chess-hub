@@ -318,3 +318,19 @@ All meaningful engineering changes should be recorded here.
 ### Changed
 
 - **`docs/IMPLEMENTATION_PLAN.md`:** Phase 8A status under Phase 8.
+
+## 2026-05-06 Phase 8B (Draw offers — online)
+
+### Added
+
+- Migration **`20260506000000_phase_8b_draw_offers.sql`:** `finalize_online_room_impl`, refactor `finalize_online_room` → wrapper + impl; **`offer_draw`**, **`respond_draw_offer`** (authenticated); trigger **`trg_rooms_clear_draw_offer_on_fen`** to clear **`draw_offer_by`** on move.
+- **`room.$roomId.tsx`:** Offer draw / Accept / Decline via **`supabase.rpc`** only (no direct **`rooms` UPDATE**).
+- **`docs/DECISIONS.md`:** ADR-0020; **`docs/SMOKE_TEST.md`:** Phase 8B checklist.
+
+### Changed
+
+- **`src/integrations/supabase/types.ts`:** `offer_draw`, `respond_draw_offer` function entries.
+
+### Deploy
+
+- **`npx supabase db push`** (or apply migration on canonical project). Regenerate types optional: existing types updated manually.

@@ -492,6 +492,15 @@ Improve user experience, maintainability, and production quality after the MVP i
 - **AI** (`game.ai`) and **online** (`room.$roomId`) unchanged except they already forward `promotion` to `chess.move` / `record-move`.
 - No schema, rating, Edge Function, or Wrangler changes.
 
+### Phase 8B: Draw offers (online)
+
+**Status:** Implemented (migration + `room.$roomId` UI + `supabase.rpc` only).
+
+- **`offer_draw` / `respond_draw_offer`** SECURITY DEFINER RPCs; **`finalize_online_room`** split into **`finalize_online_room_impl`** (internal) + existing service_role wrapper for Edge Functions.
+- Accept path sets **`end_reason = draw_agreement`**, **`result = draw`**, then **`finalize_online_room_impl`** (same rating/counter rules as other finishes; idempotent via **`finalized_at`** / **`source_room_id`**).
+- Trigger clears **`draw_offer_by`** when **`fen`** changes while **`playing`** (move cancels offer).
+- Frontend: Offer / Accept / Decline; toasts; game-over copy for agreement draws.
+
 ### Tasks
 
 - Add persistent settings.
