@@ -509,6 +509,13 @@ Improve user experience, maintainability, and production quality after the MVP i
 - Frontend: **`/store`** (mock packs, buy/equip), **`CosmeticWalletProvider`** inside **`AppShell`** (single **`ensure_my_wallet`** per session), nav link + coin hint; **`ChessBoard`** optional **`boardSkinSlug`**; profile/sidebar avatar **frame** from loadout.
 - **No** Stripe; **no** client wallet `UPDATE` or transaction **`INSERT`**; gameplay and rating logic untouched.
 
+### Phase 8D: Settings — remove subscription UI
+
+**Status:** Implemented.
+
+- **`/settings`:** removed **Subscription** card (**Current plan** / **Upgrade to Pro**), removed **Plan** row under **Account**; added short **Cosmetic store** link (Arena Coins / mock checkout) so monetization UX points to **`/store`** only.
+- **`/pricing`:** FAQ *Can I cancel anytime?* updated so it no longer references cancelling from Settings (no subscription billing in demo).
+
 ### Tasks
 
 - Add persistent settings.

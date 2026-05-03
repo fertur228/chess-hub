@@ -259,3 +259,10 @@ Requires migration **`20260506000000_phase_8b_draw_offers.sql`** applied. Two ac
 9. **Persistence:** Hard refresh **`/store`** and profile → balance, inventory, equipped slugs unchanged.
 10. **Regression:** AI and online games still play; move hints / promotion / draw flows unchanged.
 11. **`npm.cmd run build`** succeeds.
+
+## Phase 8D: Settings (no subscription CTAs)
+
+1. Open **`/settings`**: confirm **no** “Subscription” section, **no** “Current plan”, **no** “Upgrade to Pro”, **no** “Plan: Free” row.
+2. Confirm **Account** shows email, **Cosmetic store** link → **`/store`**, and **Sign out**.
+3. **`/pricing`** may still show plan comparison copy; Settings must not duplicate subscription upsell.
+4. **`npm.cmd run build`** succeeds.

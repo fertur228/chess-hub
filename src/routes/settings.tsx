@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { RequireAuth } from "@/components/require-auth";
 import { AppShell } from "@/components/app-shell";
 import { PageContainer, PageHeader } from "@/components/page-header";
@@ -20,8 +20,18 @@ function SettingsPage() {
       <div className="space-y-5 max-w-2xl">
         <Section title="Account">
           <Row label="Email" value={user?.email || ""} />
-          <Row label="Plan" value="Free" />
-          <div className="pt-3"><Button variant="outline" onClick={signOut}>Sign out</Button></div>
+          <p className="text-sm text-muted-foreground pt-1">
+            Board themes and avatar frames:{" "}
+            <Link to="/store" className="font-medium text-foreground underline underline-offset-2">
+              Cosmetic store
+            </Link>
+            {" "}(Arena Coins — mock checkout in this demo).
+          </p>
+          <div className="pt-3">
+            <Button variant="outline" onClick={signOut}>
+              Sign out
+            </Button>
+          </div>
         </Section>
 
         <Section title="Game preferences">
@@ -34,11 +44,6 @@ function SettingsPage() {
           <Toggle label="Game invites" defaultChecked />
           <Toggle label="Rating updates" defaultChecked />
           <Toggle label="Product updates" />
-        </Section>
-
-        <Section title="Subscription">
-          <Row label="Current plan" value="Free" />
-          <div className="pt-3"><Button>Upgrade to Pro</Button></div>
         </Section>
       </div>
     </PageContainer>

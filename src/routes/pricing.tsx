@@ -45,7 +45,7 @@ function Pricing() {
         <div className="space-y-3">
           <Faq q="Can I play for free?" a="Yes. Free includes online casual games and Easy AI training." />
           <Faq q="Does Pro affect rating?" a="No. Pro only unlocks learning and customization features." />
-          <Faq q="Can I cancel anytime?" a="Yes, cancel any time from settings." />
+          <Faq q="Can I cancel anytime?" a="This demo has no paid subscription checkout. Cosmetics use mock Arena Coin purchases in the Store." />
           <Faq q="Is Pro pay-to-win?" a="No. Pro never gives gameplay advantage." />
         </div>
       </div>

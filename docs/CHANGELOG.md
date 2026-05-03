@@ -357,3 +357,14 @@ All meaningful engineering changes should be recorded here.
 
 - Apply migration: **`npx supabase db push`** on the target project.
 - **`npm.cmd run build`** passes (client + SSR).
+
+## 2026-05-06 Phase 8D (Settings subscription UI cleanup)
+
+### Changed
+
+- **`src/routes/settings.tsx`:** removed subscription/plan UI; **Account** retains email, sign-out, and a **Cosmetic store** link (no **Upgrade to Pro**).
+- **`src/routes/pricing.tsx`:** FAQ answer no longer implies subscription cancellation via Settings.
+
+### Notes
+
+- **`/store`**, Arena Coins, and **`/pricing`** (marketing) unchanged in scope; no schema or Stripe changes.
