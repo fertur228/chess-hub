@@ -21,16 +21,23 @@ const free = ["Online casual games", "Easy AI training", "Basic rating", "Basic 
 const pro = ["Medium and Hard AI", "Unlimited ranked games", "Full game history", "Advanced game review", "Deeper progress insights", "Profile customization"];
 
 function Pricing() {
+  const { user } = useAuth();
   return (
     <>
       <PageHeader title="Choose how you want to improve" subtitle="Pick a plan that fits your chess journey." />
       <div className="grid md:grid-cols-2 gap-5 max-w-4xl">
         <Plan name="Free" price="$0" tagline="Perfect to get started." features={free} cta={<Button variant="outline" className="w-full" disabled>Current plan</Button>} />
         <Plan name="Pro" price="$6/mo" tagline="For players who want to level up." features={pro} highlighted
-          cta={<Button className="w-full">Upgrade to Pro</Button>} />
+          cta={<Button className="w-full" disabled>Upgrade to Pro</Button>} />
       </div>
       <div className="mt-6 text-sm text-muted-foreground max-w-4xl">
         <strong>Pro does not give gameplay advantage.</strong> It only unlocks learning, history, review, and customization features.
+        {user && (
+          <>
+            {" "}
+            Try the <Link to="/store" className="font-medium text-foreground underline">Arena Coin store</Link> for demo board skins and avatar frames (mock checkout only).
+          </>
+        )}
       </div>
 
       <div className="mt-12 max-w-3xl">

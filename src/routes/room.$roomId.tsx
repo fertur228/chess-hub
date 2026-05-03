@@ -12,6 +12,8 @@ import { toast } from "sonner";
 import { GameTypeBadge } from "@/components/badges";
 import { eloChange, generateReview } from "@/lib/chess-helpers";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useCosmeticWallet } from "@/lib/cosmetic-wallet-context";
+import { avatarFrameRingClass } from "@/lib/cosmetics";
 
 export const Route = createFileRoute("/room/$roomId")({
   head: () => ({ meta: [{ title: "Online game — ChessCoach Arena" }] }),
@@ -267,6 +269,8 @@ function mapDrawRpcError(message: string): string {
 }
 
 function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile }: any) {
+  const { snapshot: walletSnap } = useCosmeticWallet();
+  const youFrame = avatarFrameRingClass(walletSnap?.activeAvatarFrameSlug);
   const chessRef = useRef(new Chess());
   const [, force] = useState(0);
   const [thinking, setThinking] = useState(false);
@@ -433,6 +437,7 @@ function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile
           orientation={myColor}
           playerColor={myColor}
           lastMove={lastMove}
+          boardSkinSlug={walletSnap?.activeBoardSkinSlug}
           onMove={onMove}
           disabled={isOver || !myTurn || thinking}
         />
@@ -443,7 +448,11 @@ function OnlineGame({ room, user, profile, navigate, savedGameId, refreshProfile
             {!myTurn && !isOver && <div className="text-xs font-semibold text-primary">TURN</div>}
           </div>
           <div className="card-surface p-4 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-accent-foreground font-bold">{profile.username[0].toUpperCase()}</div>
+            <span className={`inline-flex rounded-lg ${youFrame}`}>
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-accent-foreground font-bold">
+                {profile.username[0].toUpperCase()}
+              </span>
+            </span>
             <div className="flex-1">
               <div className="font-semibold">
                 {profile.username} <span className="text-xs font-normal text-muted-foreground">(you)</span>

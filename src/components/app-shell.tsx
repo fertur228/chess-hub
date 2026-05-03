@@ -1,7 +1,22 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Swords, Bot, History, Trophy, User, Settings, LogOut, Menu, Crown } from "lucide-react";
+import { CosmeticWalletProvider, useCosmeticWallet } from "@/lib/cosmetic-wallet-context";
+import { avatarFrameRingClass } from "@/lib/cosmetics";
+import {
+  LayoutDashboard,
+  Swords,
+  Bot,
+  History,
+  Trophy,
+  User,
+  Settings,
+  LogOut,
+  Menu,
+  Crown,
+  ShoppingBag,
+  Coins,
+} from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -9,6 +24,7 @@ const nav = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/play", label: "Play", icon: Swords },
   { to: "/play/ai", label: "Play vs AI", icon: Bot },
+  { to: "/store", label: "Store", icon: ShoppingBag },
   { to: "/history", label: "History", icon: History },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/profile", label: "Profile", icon: User },
@@ -18,7 +34,9 @@ const nav = [
 function SidebarContent({ onNav }: { onNav?: () => void }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { profile, signOut } = useAuth();
+  const { snapshot: walletSnap } = useCosmeticWallet();
   const navigate = useNavigate();
+  const frameClass = avatarFrameRingClass(walletSnap?.activeAvatarFrameSlug);
 
   const handleSignOut = async () => {
     await signOut();
@@ -58,12 +76,26 @@ function SidebarContent({ onNav }: { onNav?: () => void }) {
       <div className="border-t p-3 space-y-2">
         {profile && (
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-soft text-accent-foreground font-semibold text-sm">
-              {profile.username.charAt(0).toUpperCase()}
-            </div>
+            <span className={`inline-flex flex-shrink-0 rounded-full ${frameClass}`}>
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-soft text-accent-foreground font-semibold text-sm">
+                {profile.username.charAt(0).toUpperCase()}
+              </span>
+            </span>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium">{profile.username}</div>
-              <div className="text-xs text-muted-foreground">Rating {profile.rating}</div>
+              <div className="text-xs text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span>Rating {profile.rating}</span>
+                {walletSnap != null && (
+                  <Link
+                    to="/store"
+                    onClick={onNav}
+                    className="inline-flex items-center gap-0.5 text-accent-foreground font-medium hover:underline"
+                  >
+                    <Coins className="h-3 w-3" />
+                    {walletSnap.balance}
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -79,6 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { profile } = useAuth();
   const [open, setOpen] = useState(false);
   return (
+    <CosmeticWalletProvider>
     <div className="min-h-screen flex w-full bg-background">
       <aside className="hidden md:flex w-64 flex-shrink-0 border-r bg-sidebar">
         <SidebarContent />
@@ -108,5 +141,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="flex-1 min-w-0">{children}</main>
       </div>
     </div>
+    </CosmeticWalletProvider>
   );
 }

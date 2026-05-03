@@ -215,7 +215,7 @@ Before submitting assignment links in Typeform:
 2. **Git**: run `git ls-files .env` — expect no output; confirm no secrets in history if `.env` was ever committed by mistake.
 3. **Supabase Dashboard → Authentication → URL configuration**: Site URL and redirect URLs include your production web origin.
 4. **Edge Functions**: `record-move` and `forfeit-game` are deployed on the same Supabase project the production app uses (re-deploy after any final change).
-5. **Quick route pass** on production: `/`, `/login`, `/signup`, `/dashboard`, `/play`, `/play/ai`, `/play/find`, `/play/create`, `/play/join`, `/profile`, `/profile/edit`, `/history`, `/leaderboard`.
+5. **Quick route pass** on production: `/`, `/login`, `/signup`, `/dashboard`, `/play`, `/play/ai`, `/play/find`, `/play/create`, `/play/join`, `/store`, `/profile`, `/profile/edit`, `/history`, `/leaderboard`.
 6. Optional: run **Pre-deploy gameplay integrity sweep** and **Phase 7A** sections above on the live URL.
 
 ## Phase 8A: Pawn promotion (Queen / Rook / Bishop / Knight)
@@ -243,3 +243,19 @@ Requires migration **`20260506000000_phase_8b_draw_offers.sql`** applied. Two ac
 6. **Respond-first:** While opponent’s offer is pending, offering again returns error; use Accept/Decline.
 
 **Optional:** Grep: `rg 'rooms.*\\.update|from\\([\"\\']rooms[\"\\']\\).*\\.update' src` — expect **no** matches for draw (none expected in app routes after Phase 5C).
+
+## Phase 8C: Mock coins + cosmetic store
+
+**Prerequisites:** Migration **`20260506120000_phase_8c_cosmetic_store.sql`** applied. Grep **`src/`**: no **`user_wallets`**.**`update`**, no **`coin_transactions`**.**`insert`** from the client (mutations should be **`rpc`** only).
+
+1. **Existing user:** Open **`/store`** → balance shows **500** coins (or migrated backfill amount); wallet row exists in Supabase.
+2. **New user (optional):** Sign up → open **`/store`** → **500** coins and **`starting_grant`** in **`coin_transactions`** (via trigger / first **`ensure_my_wallet`**).
+3. **Mock buy:** **Mock Buy** on smallest pack → balance increases by **500**; new **`coin_transactions`** row **`transaction_type = mock_coin_purchase`**, **`status = mock_paid`**, **`mock_price_cents`** set.
+4. **Buy skin:** Purchase a board skin **≤** balance → coins deducted; **`user_cosmetics`** row; **`cosmetic_purchase`** transaction with negative **`amount`**.
+5. **Duplicate:** Attempt to buy same item again → error **ALREADY_OWNED** (toast).
+6. **Insufficient funds:** Lower balance (or pick expensive item) → **INSUFFICIENT_FUNDS**.
+7. **Equip board skin:** **Equip** → **`/play/ai`** or online game → board colors/chrome match skin (or default if RPC fails).
+8. **Avatar frame:** Equip a frame → **Profile** and **sidebar** initials show ring/glow.
+9. **Persistence:** Hard refresh **`/store`** and profile → balance, inventory, equipped slugs unchanged.
+10. **Regression:** AI and online games still play; move hints / promotion / draw flows unchanged.
+11. **`npm.cmd run build`** succeeds.

@@ -334,3 +334,26 @@ All meaningful engineering changes should be recorded here.
 ### Deploy
 
 - **`npx supabase db push`** (or apply migration on canonical project). Regenerate types optional: existing types updated manually.
+
+## 2026-05-06 Phase 8C (Mock coins + cosmetic store)
+
+### Added
+
+- Migration **`20260506120000_phase_8c_cosmetic_store.sql`**: cosmetic catalog, wallets (default **500** coins), transactions, inventory, loadouts; RPCs **`ensure_my_wallet`**, **`mock_purchase_coins`**, **`purchase_cosmetic`**, **`equip_cosmetic`**; RLS read-only for users on sensitive tables.
+- **`src/routes/store.tsx`**: balance, mock coin packs, board skins + avatar frames; **Mock Buy** / **Buy** / **Equip** via **`supabase.rpc` only**; mock-checkout disclaimer.
+- **`src/lib/cosmetics.ts`**, **`src/lib/cosmetic-wallet-context.tsx`**: wallet snapshot parsing, board/avatar styling helpers; provider wraps **`AppShell`**.
+- **`AppShell`**: **Store** nav link, optional coin balance link, equipped **avatar frame** on sidebar initials.
+- **`ChessBoard`**: optional **`boardSkinSlug`** (equipped skin applies square + board chrome colors).
+- **`game.ai`**, **`room.$roomId`**: pass equipped board skin from wallet context.
+- **`profile.index`**: equipped frame around profile avatar tile.
+- **`pricing`**: logged-in CTA/link to **`/store`** (demo economy).
+- **`docs/DECISIONS.md`:** ADR-0021; **`docs/SMOKE_TEST.md`:** Phase 8C checklist.
+
+### Changed
+
+- **`src/integrations/supabase/types.ts`:** tables **`user_wallets`**, **`user_cosmetics`**, **`user_cosmetic_loadouts`**; RPC typings for Phase 8C.
+
+### Deploy / verify
+
+- Apply migration: **`npx supabase db push`** on the target project.
+- **`npm.cmd run build`** passes (client + SSR).

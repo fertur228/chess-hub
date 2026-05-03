@@ -8,6 +8,8 @@ import { GameRow } from "./dashboard";
 import { EmptyState } from "@/components/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Trophy, Edit, Sparkles } from "lucide-react";
+import { useCosmeticWallet } from "@/lib/cosmetic-wallet-context";
+import { avatarFrameRingClass } from "@/lib/cosmetics";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({ meta: [{ title: "Profile - ChessCoach Arena" }] }),
@@ -24,6 +26,8 @@ function leagueName(rating: number) {
 
 function ProfilePage() {
   const { user, profile, loading } = useAuth();
+  const { snapshot: walletSnap } = useCosmeticWallet();
+  const frameClass = avatarFrameRingClass(walletSnap?.activeAvatarFrameSlug);
   const [games, setGames] = useState<any[] | null>(null);
 
   useEffect(() => {
@@ -64,9 +68,11 @@ function ProfilePage() {
 
       <div className="card-surface p-6 md:p-8 mb-6">
         <div className="flex flex-col md:flex-row md:items-center gap-6">
-          <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-3xl font-display font-bold">
-            {profile.username.charAt(0).toUpperCase()}
-          </div>
+          <span className={`inline-flex rounded-2xl ${frameClass}`}>
+            <span className="flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-3xl font-display font-bold">
+              {profile.username.charAt(0).toUpperCase()}
+            </span>
+          </span>
           <div className="flex-1">
             <h2 className="font-display text-2xl font-bold">{profile.username}</h2>
             <div className="flex flex-wrap gap-2 mt-2">

@@ -37,6 +37,7 @@ Beginner-focused chess practice and online play built for the **nFactorial Incub
 - Online play: create private rooms, join by code, public **Find Match** (casual or ranked).
 - Supabase Realtime for room sync; server-validated moves and trusted game end flows.
 - Post-game reviews for saved games.
+- **Cosmetic store (demo):** Arena Coins, board themes, and avatar frames via Supabase RPCs; **mock checkout only** (no real payments in MVP).
 
 ## Tech stack
 

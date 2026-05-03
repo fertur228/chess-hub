@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { boardSkinStyles } from "@/lib/cosmetics";
 
 type LastMove = { from: Square; to: Square };
 
@@ -43,8 +44,8 @@ type Props = {
   disabled?: boolean;
   /** Human player's color — used to restrict selection, hints, and dragging to own pieces on your turn. */
   playerColor: "white" | "black";
-  /** Last move on the board (from → to). Updated by parent after each half-move. */
-  lastMove?: LastMove | null;
+  /** Optional equipped board skin slug from store loadout (cosmetic only). */
+  boardSkinSlug?: string | null;
 };
 
 const LAST_MOVE_BG = "oklch(0.9 0.08 90 / 0.38)";
@@ -119,7 +120,7 @@ function buildSquareStyles(
   return styles;
 }
 
-export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, lastMove }: Props) {
+export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, lastMove, boardSkinSlug }: Props) {
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
 
@@ -146,6 +147,8 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
       setPendingPromotion(null);
     }
   }, [disabled]);
+
+  const skin = useMemo(() => boardSkinStyles(boardSkinSlug ?? null), [boardSkinSlug]);
 
   const legalFromSelection = useMemo(() => {
     if (!game || !selectedSquare || disabled) return [];
@@ -278,14 +281,10 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
             allowDragging: !disabled,
             animationDurationInMs: 200,
             showNotation: true,
-            lightSquareStyle: { backgroundColor: "oklch(0.94 0.02 90)" },
-            darkSquareStyle: { backgroundColor: "oklch(0.55 0.06 150)" },
+            lightSquareStyle: skin.lightSquareStyle,
+            darkSquareStyle: skin.darkSquareStyle,
             squareStyles,
-            boardStyle: {
-              borderRadius: "8px",
-              boxShadow: "0 4px 24px -8px oklch(0 0 0 / 0.2)",
-              overflow: "hidden",
-            },
+            boardStyle: skin.boardStyle,
             canDragPiece,
             onSquareClick,
             onPieceDrop,

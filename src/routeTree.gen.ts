@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StoreRouteImport } from './routes/store'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -33,6 +34,11 @@ import { Route as PlayCreateRouteImport } from './routes/play.create'
 import { Route as PlayAiRouteImport } from './routes/play.ai'
 import { Route as GameAiRouteImport } from './routes/game.ai'
 
+const StoreRoute = StoreRouteImport.update({
+  id: '/store',
+  path: '/store',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/store': typeof StoreRoute
   '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
   '/play/create': typeof PlayCreateRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/store': typeof StoreRoute
   '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
   '/play/create': typeof PlayCreateRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRouteWithChildren
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
+  '/store': typeof StoreRoute
   '/game/ai': typeof GameAiRoute
   '/play/ai': typeof PlayAiRoute
   '/play/create': typeof PlayCreateRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/signup'
+    | '/store'
     | '/game/ai'
     | '/play/ai'
     | '/play/create'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/settings'
     | '/signup'
+    | '/store'
     | '/game/ai'
     | '/play/ai'
     | '/play/create'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/signup'
+    | '/store'
     | '/game/ai'
     | '/play/ai'
     | '/play/create'
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRouteWithChildren
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
+  StoreRoute: typeof StoreRoute
   GameAiRoute: typeof GameAiRoute
   ReviewGameIdRoute: typeof ReviewGameIdRoute
   RoomRoomIdRoute: typeof RoomRoomIdRoute
@@ -320,6 +333,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/store': {
+      id: '/store'
+      path: '/store'
+      fullPath: '/store'
+      preLoaderRoute: typeof StoreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -528,6 +548,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRouteWithChildren,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
+  StoreRoute: StoreRoute,
   GameAiRoute: GameAiRoute,
   ReviewGameIdRoute: ReviewGameIdRoute,
   RoomRoomIdRoute: RoomRoomIdRoute,

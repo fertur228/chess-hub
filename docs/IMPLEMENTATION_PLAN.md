@@ -501,6 +501,14 @@ Improve user experience, maintainability, and production quality after the MVP i
 - Trigger clears **`draw_offer_by`** when **`fen`** changes while **`playing`** (move cancels offer).
 - Frontend: Offer / Accept / Decline; toasts; game-over copy for agreement draws.
 
+### Phase 8C: Mock coins + cosmetic store
+
+**Status:** Implemented.
+
+- Migration **`20260506120000_phase_8c_cosmetic_store.sql`**: tables **`cosmetic_items`**, **`user_wallets`**, **`coin_transactions`**, **`user_cosmetics`**, **`user_cosmetic_loadouts`**; seed catalog; wallet backfill **500** + **`starting_grant`**; **`handle_new_user`** creates wallet + loadout + grant; RPCs **`ensure_my_wallet`**, **`mock_purchase_coins`**, **`purchase_cosmetic`**, **`equip_cosmetic`** (`REVOKE PUBLIC`, **`GRANT authenticated`**).
+- Frontend: **`/store`** (mock packs, buy/equip), **`CosmeticWalletProvider`** inside **`AppShell`** (single **`ensure_my_wallet`** per session), nav link + coin hint; **`ChessBoard`** optional **`boardSkinSlug`**; profile/sidebar avatar **frame** from loadout.
+- **No** Stripe; **no** client wallet `UPDATE` or transaction **`INSERT`**; gameplay and rating logic untouched.
+
 ### Tasks
 
 - Add persistent settings.

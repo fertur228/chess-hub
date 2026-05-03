@@ -471,3 +471,27 @@ Players need a draw-by-agreement flow online. Draw affects `rooms`, `games`, pro
 - Browser uses **`supabase.rpc` only** for draw; no **`from('rooms').update`** for draw state.
 - Ranked draws still use the same Elo and **`rating_events`** rules inside **`finalize_online_room_impl`** (half-point scores); casual draws update counters only.
 - Idempotency for finished rooms remains **`finalized_at` / `source_room_id`** as before.
+
+## ADR-0021: Cosmetic monetization uses mock coins for MVP
+
+### Status
+
+Accepted
+
+### Context
+
+The product needs a credible **cosmetic-only** monetization story for demos and coursework (nFactorial) without integrating real payment providers or handling PCI scope before submission.
+
+### Decision
+
+- Add **Arena Coins**, **cosmetic catalog** (board skins, avatar frames), **wallets**, **inventory**, **loadouts**, and **transaction history** in Postgres.
+- Every account receives a **500 coin** starting grant (migration backfill + new-user path via **`handle_new_user`** / **`ensure_my_wallet`**).
+- **No Stripe** and **no real payment processing** in this MVP: **`mock_purchase_coins`** simulates checkout, writes **`coin_transactions`** with **`status = mock_paid`** and demo metadata.
+- **All balance and inventory mutations** go through **SECURITY DEFINER** RPCs (**`ensure_my_wallet`**, **`mock_purchase_coins`**, **`purchase_cosmetic`**, **`equip_cosmetic`**). Clients may **read** their wallet/transactions/inventory/loadout under RLS but must **not** `UPDATE` wallets or **INSERT** transactions directly.
+- **Core gameplay, matchmaking, and rating formulas stay unchanged**; cosmetics do not affect move validation or Elo.
+
+### Consequences
+
+- UI must clearly label checkout as **mock / demo** until a real provider is integrated.
+- Real payments remain a post-MVP concern; schema and RPC names can evolve (e.g. provider id on transactions).
+- Security model stays consistent with earlier ADRs: **RLS + trusted RPCs** for sensitive writes.

@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Bot, Loader2, Trophy } from "lucide-react";
 import { GameTypeBadge } from "@/components/badges";
 import { toast } from "sonner";
+import { useCosmeticWallet } from "@/lib/cosmetic-wallet-context";
+import { avatarFrameRingClass } from "@/lib/cosmetics";
 
 type Search = { difficulty: Difficulty; color: "white" | "black" };
 
@@ -48,6 +50,8 @@ export const Route = createFileRoute("/game/ai")({
 function AIGame() {
   const { difficulty, color } = Route.useSearch();
   const { user, profile, refreshProfile } = useAuth();
+  const { snapshot: walletSnap } = useCosmeticWallet();
+  const youFrameClass = avatarFrameRingClass(walletSnap?.activeAvatarFrameSlug);
   const navigate = useNavigate();
   const chessRef = useRef(new Chess());
   const finalizedRef = useRef(false);
@@ -219,6 +223,7 @@ function AIGame() {
             orientation={color}
             playerColor={color}
             lastMove={lastMove}
+            boardSkinSlug={walletSnap?.activeBoardSkinSlug}
             onMove={onMove}
             disabled={gameOver || thinking || chessRef.current.turn() === aiColor}
           />
@@ -236,6 +241,7 @@ function AIGame() {
             icon={<Trophy className="h-5 w-5" />}
             active={chessRef.current.turn() !== aiColor && !gameOver}
             you
+            avatarFrameClass={youFrameClass}
           />
 
           <div className="card-surface p-4">
@@ -328,16 +334,25 @@ function PlayerCard({
   icon,
   active,
   you,
+  avatarFrameClass,
 }: {
   name: string;
   sub: string;
   icon: React.ReactNode;
   active?: boolean;
   you?: boolean;
+  avatarFrameClass?: string;
 }) {
+  const wrap = avatarFrameClass && you;
   return (
     <div className={`card-surface p-4 flex items-center gap-3 ${active ? "ring-2 ring-primary" : ""}`}>
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-accent-foreground">{icon}</div>
+      {wrap ? (
+        <span className={`inline-flex rounded-lg ${avatarFrameClass}`}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-accent-foreground">{icon}</span>
+        </span>
+      ) : (
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-accent-foreground">{icon}</div>
+      )}
       <div className="flex-1">
         <div className="font-semibold flex items-center gap-2">
           {name}
