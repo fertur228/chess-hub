@@ -483,10 +483,19 @@ Still requires operator action outside the repo:
 
 Improve user experience, maintainability, and production quality after the MVP is stable.
 
+### Phase 8A: Promotion picker
+
+**Status:** Implemented.
+
+- `ChessBoard` detects pawn promotion using **chess.js verbose legal moves** (`promotion` on `Move`). When more than one legal promotion exists, a **Dialog** offers Queen / Rook / Bishop / Knight; **Cancel** or closing the dialog leaves the position unchanged.
+- **Click-to-move** and **drag-and-drop** both open the picker for promotion targets; drag returns `false` until a piece is chosen so the piece snaps back until the user confirms.
+- **AI** (`game.ai`) and **online** (`room.$roomId`) unchanged except they already forward `promotion` to `chess.move` / `record-move`.
+- No schema, rating, Edge Function, or Wrangler changes.
+
 ### Tasks
 
 - Add persistent settings.
-- Improve board UX, promotion choice, highlights, and sounds.
+- Improve board UX, highlights, and sounds (beyond promotion).
 - Add avatar upload if needed.
 - Improve game review UI.
 - Add test coverage for critical flows.
@@ -503,6 +512,10 @@ Improve user experience, maintainability, and production quality after the MVP i
 
 - Polish can expand scope if not tied to stable MVP flows.
 - Visual improvements can hide unresolved data or security issues.
+
+### Completion audit snapshot (nFactorial, 2026-05-03)
+
+Phase-by-phase implementation status, deferred items, and submission blockers: see **`docs/ENGINEERING_AUDIT.md`** section *nFactorial project completion audit*.
 
 
 ### Phase 5B Completed (Leave Confirmation & Trusted Game Forfeit)

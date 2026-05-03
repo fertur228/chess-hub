@@ -1,8 +1,40 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Chessboard } from "react-chessboard";
-import { Chess, type Square } from "chess.js";
+import { Chess, type Move, type PieceSymbol, type Square } from "chess.js";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 type LastMove = { from: Square; to: Square };
+
+type PendingPromotion = {
+  from: Square;
+  to: Square;
+  choices: PieceSymbol[];
+};
+
+const PROMOTION_ORDER: PieceSymbol[] = ["q", "r", "b", "n"];
+
+const PROMOTION_LABEL: Record<"q" | "r" | "b" | "n", string> = {
+  q: "Queen",
+  r: "Rook",
+  b: "Bishop",
+  n: "Knight",
+};
+
+function promotionChoicesForTarget(moves: Move[], from: Square, to: Square): PieceSymbol[] {
+  const found = new Set<PieceSymbol>();
+  for (const m of moves) {
+    if (m.from === from && m.to === to && m.promotion) found.add(m.promotion);
+  }
+  return PROMOTION_ORDER.filter((p) => found.has(p));
+}
 
 type Props = {
   fen: string;
@@ -46,7 +78,7 @@ function mergeSquareStyle(
     next.boxShadow = `${existing.boxShadow}, ${add.boxShadow}`;
   }
   if (existing.backgroundImage && add.backgroundImage) {
-    next.backgroundImage = `${add.backgroundImage}, ${existing.backgroundImage}`;
+    next.backgroundImage = `${existing.backgroundImage}, ${add.backgroundImage}`;
   }
   return next;
 }
@@ -89,6 +121,7 @@ function buildSquareStyles(
 
 export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, lastMove }: Props) {
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
+  const [pendingPromotion, setPendingPromotion] = useState<PendingPromotion | null>(null);
 
   const game = useMemo(() => {
     const c = new Chess();
@@ -104,10 +137,14 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
 
   useEffect(() => {
     setSelectedSquare(null);
+    setPendingPromotion(null);
   }, [fen]);
 
   useEffect(() => {
-    if (disabled) setSelectedSquare(null);
+    if (disabled) {
+      setSelectedSquare(null);
+      setPendingPromotion(null);
+    }
   }, [disabled]);
 
   const legalFromSelection = useMemo(() => {
@@ -129,11 +166,26 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
   const tryCompleteMove = useCallback(
     (from: Square, to: Square): boolean => {
       if (!game) return false;
-      const piece = game.get(from);
-      const needsPromotion = piece?.type === "p" && (to.endsWith("8") || to.endsWith("1"));
-      return onMove(from, to, needsPromotion ? "q" : undefined);
+      return onMove(from, to, undefined);
     },
     [game, onMove],
+  );
+
+  const openPromotionPicker = useCallback((from: Square, to: Square, choices: PieceSymbol[]) => {
+    if (choices.length === 0) return;
+    setSelectedSquare(null);
+    setPendingPromotion({ from, to, choices });
+  }, []);
+
+  const choosePromotion = useCallback(
+    (piece: PieceSymbol) => {
+      if (!pendingPromotion || !pendingPromotion.choices.includes(piece)) return;
+      const { from, to } = pendingPromotion;
+      setPendingPromotion(null);
+      const ok = onMove(from, to, piece);
+      if (ok) setSelectedSquare(null);
+    },
+    [pendingPromotion, onMove],
   );
 
   const onSquareClick = useCallback(
@@ -150,6 +202,11 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
       if (selectedSquare && selectedSquare !== sq) {
         const isLegalDest = legalFromSelection.some((m) => m.to === sq);
         if (isLegalDest) {
+          const choices = promotionChoicesForTarget(legalFromSelection, selectedSquare, sq);
+          if (choices.length > 0) {
+            openPromotionPicker(selectedSquare, sq, choices);
+            return;
+          }
           if (tryCompleteMove(selectedSquare, sq)) setSelectedSquare(null);
           return;
         }
@@ -172,17 +229,7 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
 
       setSelectedSquare(sq);
     },
-    [disabled, game, selectedSquare, legalFromSelection, tryCompleteMove, myChar],
-  );
-
-  const onPieceDrop = useCallback(
-    ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => {
-      if (!targetSquare || disabled) return false;
-      const ok = onMove(sourceSquare, targetSquare, "q");
-      if (ok) setSelectedSquare(null);
-      return ok;
-    },
-    [disabled, onMove],
+    [disabled, game, selectedSquare, legalFromSelection, tryCompleteMove, myChar, openPromotionPicker],
   );
 
   const canDragPiece = useCallback(
@@ -195,28 +242,88 @@ export function ChessBoard({ fen, orientation, onMove, disabled, playerColor, la
     [disabled, game, myChar],
   );
 
+  const onPieceDrop = useCallback(
+    ({ sourceSquare, targetSquare }: { sourceSquare: string; targetSquare: string | null }) => {
+      if (!targetSquare || disabled || !game) return false;
+      const src = sourceSquare as Square;
+      const tgt = targetSquare as Square;
+      if (!canDragPiece({ square: sourceSquare })) return false;
+
+      const moves = game.moves({ square: src, verbose: true });
+      const isLegal = moves.some((m) => m.from === src && m.to === tgt);
+      if (!isLegal) return false;
+
+      const choices = promotionChoicesForTarget(moves, src, tgt);
+      if (choices.length > 0) {
+        openPromotionPicker(src, tgt, choices);
+        return false;
+      }
+
+      const ok = onMove(src, tgt, undefined);
+      if (ok) setSelectedSquare(null);
+      return ok;
+    },
+    [disabled, game, onMove, canDragPiece, openPromotionPicker],
+  );
+
+  const promotionDialogOpen = pendingPromotion !== null;
+
   return (
-    <div className="w-full max-w-[640px] mx-auto aspect-square">
-      <Chessboard
-        options={{
-          position: fen,
-          boardOrientation: orientation,
-          allowDragging: !disabled,
-          animationDurationInMs: 200,
-          showNotation: true,
-          lightSquareStyle: { backgroundColor: "oklch(0.94 0.02 90)" },
-          darkSquareStyle: { backgroundColor: "oklch(0.55 0.06 150)" },
-          squareStyles,
-          boardStyle: {
-            borderRadius: "8px",
-            boxShadow: "0 4px 24px -8px oklch(0 0 0 / 0.2)",
-            overflow: "hidden",
-          },
-          canDragPiece,
-          onSquareClick,
-          onPieceDrop,
+    <>
+      <div className="w-full max-w-[640px] mx-auto aspect-square">
+        <Chessboard
+          options={{
+            position: fen,
+            boardOrientation: orientation,
+            allowDragging: !disabled,
+            animationDurationInMs: 200,
+            showNotation: true,
+            lightSquareStyle: { backgroundColor: "oklch(0.94 0.02 90)" },
+            darkSquareStyle: { backgroundColor: "oklch(0.55 0.06 150)" },
+            squareStyles,
+            boardStyle: {
+              borderRadius: "8px",
+              boxShadow: "0 4px 24px -8px oklch(0 0 0 / 0.2)",
+              overflow: "hidden",
+            },
+            canDragPiece,
+            onSquareClick,
+            onPieceDrop,
+          }}
+        />
+      </div>
+
+      <Dialog
+        open={promotionDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) setPendingPromotion(null);
         }}
-      />
-    </div>
+      >
+        <DialogContent className="sm:max-w-md" aria-describedby="promotion-dialog-desc">
+          <DialogHeader>
+            <DialogTitle>Pawn promotion</DialogTitle>
+            <DialogDescription id="promotion-dialog-desc">
+              Choose a piece. The move is not played until you confirm.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col gap-2 sm:space-x-0">
+            {pendingPromotion?.choices.map((p) => (
+              <Button
+                key={p}
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={() => choosePromotion(p)}
+              >
+                {PROMOTION_LABEL[p as keyof typeof PROMOTION_LABEL]}
+              </Button>
+            ))}
+            <Button type="button" variant="ghost" className="w-full" onClick={() => setPendingPromotion(null)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

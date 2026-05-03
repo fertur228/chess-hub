@@ -206,3 +206,27 @@ Run against the production or preview Worker URL (`*.workers.dev` or custom host
 5. Confirm Supabase **`Auth → URL Configuration`** allows your Workers origin (Site URL / redirect URLs) if OAuth or email redirects misbehave post-deploy.
 
 **Rollback reminder:** Workers versions can be rolled back from the Cloudflare dashboard; pinning a Git tag alongside each release is helpful for auditors.
+
+## Pre-Typeform submission (nFactorial)
+
+Before submitting assignment links in Typeform:
+
+1. **README.md**: replace **Live app** and **Source** table URLs with the real Cloudflare Workers (or custom domain) URL and public GitHub repository URL.
+2. **Git**: run `git ls-files .env` — expect no output; confirm no secrets in history if `.env` was ever committed by mistake.
+3. **Supabase Dashboard → Authentication → URL configuration**: Site URL and redirect URLs include your production web origin.
+4. **Edge Functions**: `record-move` and `forfeit-game` are deployed on the same Supabase project the production app uses (re-deploy after any final change).
+5. **Quick route pass** on production: `/`, `/login`, `/signup`, `/dashboard`, `/play`, `/play/ai`, `/play/find`, `/play/create`, `/play/join`, `/profile`, `/profile/edit`, `/history`, `/leaderboard`.
+6. Optional: run **Pre-deploy gameplay integrity sweep** and **Phase 7A** sections above on the live URL.
+
+## Phase 8A: Pawn promotion (Queen / Rook / Bishop / Knight)
+
+Exercise in **AI** and **online** games; use a position where underpromotion is legal.
+
+1. **AI — white promotes:** From `/play/ai`, play until a white pawn can advance or capture to the 8th rank; complete by **click** or **drag**. Confirm the **promotion dialog** lists Queen, Rook, Bishop, Knight plus **Cancel**.
+2. **AI — each piece:** In separate attempts, promote to **Knight**, **Rook**, **Bishop**, **Queen**; confirm board and move list match.
+3. **AI — cancel:** Open the dialog and **Cancel** (or close); confirm the position is **unchanged** and you can move again.
+4. **AI — save:** Finish an AI game that included a promotion; confirm save / history / review still work.
+5. **Online — picker on your turn:** Promote on your move; dialog only when it is your turn and your pawn.
+6. **Online — opponent view:** After you select a piece, opponent (or second session) sees the **correct promoted piece** after sync.
+7. **Illegal / rejection:** Illegal moves still rejected; failed `record-move` rollback behavior unchanged.
+8. **Regression:** Non-promotion moves, **hints**, **last-move** tint, and **check** highlight behave as before when the dialog is not open.

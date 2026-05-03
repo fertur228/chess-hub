@@ -197,3 +197,93 @@ Current chess limitations:
 - **Root config**: `wrangler.jsonc` uses `main` = `@tanstack/react-start/server-entry`, `nodejs_compat`, and **`observability.enabled`**. Operators apply deploy with **`npm run deploy`** or **`wrangler deploy --config dist/server/wrangler.json`** after a successful **`npm run build`**.
 - **Environment**: **`VITE_SUPABASE_*`** must be present at **`npm run build`** time so the client bundle resolves Supabase. Worker runtime expects **`SUPABASE_URL`** + **`SUPABASE_PUBLISHABLE_KEY`**. **`SUPABASE_SERVICE_ROLE_KEY`** is documented for optional **`supabaseAdmin`** usage only; unused by current routes. Never ship service role keys as **`VITE_*`** values.
 - **Verify**: **`npm.cmd run build`** passes; **`wrangler deploy … --dry-run`** passes after build.
+
+## nFactorial project completion audit (2026-05-03)
+
+Snapshot: compare internal phase plan vs repo reality; no code or schema changes from this audit.
+
+### Submission readiness (overall)
+
+- **Product**: Strong full-stack chess MVP with server-authoritative online play, AI training + review, rating/leaderboard, Workers deployment.
+- **Documentation / links**: README submission table still uses **placeholder** URLs — **fix before Typeform** (non-code; operator replaces with live Workers URL + public GitHub).
+- **Secrets**: `.env` is listed in `.gitignore`; verify with `git ls-files .env` (should be empty) before pushing.
+
+### nFactorial level assessment (evidence-based)
+
+| Criterion | Evidence |
+|-----------|----------|
+| Chess rules | `chess.js` + `record-move` Edge Function validates moves; illegal moves rejected server-side. |
+| AI game | `play.ai.tsx`, `game.ai.tsx`, heuristic Coach Bot; AI finalize RPC `finalize_ai_training_game`. |
+| Auth / profile / progress | Supabase Auth; `onboarding`, `dashboard`, `profile`, `update_my_profile` RPC (stats locked). |
+| Database | Supabase Postgres + migrations (`profiles`, `games`, `rooms`, RLS, RPCs). |
+| Responsive web app | Tailwind layouts, marketing/app shells, route-based UI (standard responsive patterns). |
+| Online multiplayer | `room.$roomId.tsx`, Realtime + polling; moves via `record-move`. |
+| Play with friend | Private rooms `play.create`, join `play.join?code=…`, invite flow in docs. |
+| Coach / review | `review.$gameId.tsx`, heuristic review; not Stockfish. |
+| Leaderboard / rating | `leaderboard`, Elo via server RPC `finalize_online_room` + `rating_events` (per plan/changelog). |
+| Business thinking | `/pricing` describes ethical monetization (no pay-to-win); no Stripe in repo. |
+| Cloudflare | `wrangler.jsonc`, Workers deploy path documented in README. |
+
+**Assessment**: **Strong** (all major assignment pillars present, deployed, security-conscious). **Great** would require automated tests, polished auth edge cases (forgot password, email confirmation UX), and tighter refactors (Phase 2 “done” criteria).
+
+### Completion matrix
+
+| Phase | Planned goal | Status | Evidence | Notes |
+|-------|--------------|--------|----------|--------|
+| 0 | Supabase / env / npm | ✅ | `.env.example`, `package-lock.json`, canonical project in docs, migrations folder | Phase 0.7 login/email confirmation caveat may still apply per Supabase project settings. |
+| 1 | Auth / profile hardening | 🟡 | `RequireAuth`, onboarding redirect, sign-out; `docs/IMPLEMENTATION_PLAN` lists forgot-password, email-confirmation UX, SSR guards as pending | Core flows implemented; Phase 1 DoD not fully met on paper. |
+| 2 | Dashboard / profile / history cleanup | 🟡 | Real data on pages; audit still notes some `any`, TanStack Query unused | Shared typed query layer / “no cross-route imports” not fully verified as complete. |
+| 3 | AI save / review / counters | ✅ | Migration `finalize_ai_training_game`, `game.ai.tsx` RPC, `review.$gameId`, history | Per CHANGELOG Phase 3A. |
+| 3B | Board hints / highlights | ✅ | `chess-board.tsx` legal moves, last move, check styling | Per CHANGELOG Phase 3B. |
+| 4 | Online rooms | ✅ | `play.create`, `play.join`, `room.$roomId`, Realtime | Phase 4A+ flows. |
+| 4B | Join RPC / RLS | ✅ | `join_room` migration, ADR-0012 | |
+| 4C | Private + public matchmaking | ✅ | `find_or_create_public_room`, `play.find`, `visibility` | |
+| 5A | Server-side move validation | ✅ | `supabase/functions/record-move` | |
+| 5B | Resign / leave / forfeit | ✅ | `forfeit-game`, `useBlocker`, `beforeunload` | |
+| 5C | RLS lockdown on rooms | ✅ | `rls_lockdown` migration, ADR-0016 | |
+| 6B | Server-side rating / leaderboard | ✅ | `finalize_online_room`, rating migrations, CHANGELOG 6B/6D verification | |
+| 6C | Profile stat protection | ✅ | `update_my_profile`, `profile_update_rpc` / rating lock migrations | |
+| 6D | Ranked only via Find Match | ✅ | Phase 6D migration + UI; private casual-only | |
+| 7A | Cloudflare readiness | ✅ | README deploy, `wrangler.jsonc`, `npm run deploy` | User reports Worker live. |
+| 8 | Polish | ⏭️ | Settings partial, no test suite, Lovable legacy noted | Intentional deferral per plan. |
+
+### Implemented features (by area)
+
+- **Auth / onboarding / profile**: signup, login, onboarding, profile index/edit, public `/u/$username`, `settings` shell.
+- **AI training**: setup `play.ai`, play `game.ai`, finalize RPC, coach-style review.
+- **Online private rooms**: create, code join, room page.
+- **Public matchmaking**: `play.find` casual + ranked.
+- **Ranked matchmaking**: public queue only; DB enforces private casual-only.
+- **Review / history**: `review.$gameId`, `history`, dashboard recent games.
+- **Rating / leaderboard**: server finalization, `leaderboard` route, profile ratings.
+- **Security / authority**: Edge Functions + SECURITY DEFINER RPCs, RLS patterns in migrations.
+- **Deployment / readiness**: Workers path, env docs, smoke test doc.
+- **Documentation**: README, `docs/*`, ADRs.
+
+### Deferred / not implemented (honest list)
+
+- **Intentionally out of scope**: Stockfish (ADR-0006), Stripe / real billing (pricing is conceptual).
+- **Future polish (Phase 8)**: Forgot-password, dedicated email-confirmation UX, loader-level auth guards, form validation cleanup, remove Lovable wrapper references.
+- **Product gaps** (called out in audits): draw-offer UI, clocks/time controls, promotion picker (defaults to queen in board helpers), persistent settings toggles, avatar upload, heartbeat/presence for rage-quit, city/social leaderboard.
+- **Technical debt**: no automated tests in `package.json`; some `any` / cross-cutting data access cleanup.
+
+### Submission blockers
+
+| Item | Severity |
+|------|----------|
+| Replace README **Live app** and **Source** placeholder URLs with real links | **Blocker** for a polished submission |
+| Confirm repo is pushed to GitHub and graders can clone | **Operator** (cannot verify from audit alone) |
+| Confirm production Supabase Auth **redirect URLs** include deployed Workers origin | **Blocker** if magic links/OAuth redirect to wrong host |
+| `.env` accidentally committed | **Blocker** if true — `.gitignore` expects it ignored |
+| README placeholders only | **Non-blocker** for “app works” but **blocker** for “submission package complete” |
+
+**No critical application-code blocker identified** by static review for the listed routes.
+
+### README positioning (paste into README)
+
+Use the paragraph provided in the chat response under “README/nFactorial positioning” (kept out of this file to avoid duplicating marketing copy the owner may edit).
+
+### Recommendation
+
+- **Go** for submission after swapping README URLs and double-checking Auth redirect URLs + public GitHub visibility.
+- **Last checks before Typeform**: (1) paste real deployment + GitHub links in README, (2) run `docs/SMOKE_TEST.md` Phase 7A + critical route smoke on production, (3) confirm `record-move` / `forfeit-game` deployed on the same Supabase project as production.

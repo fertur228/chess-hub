@@ -294,3 +294,27 @@ All meaningful engineering changes should be recorded here.
 - Replace README deployment and GitHub placeholders with real URLs.
 - Configure Cloudflare Worker environment variables / secrets for production and apply full deploy (requires `wrangler login` + account access).
 - Run `docs/SMOKE_TEST.md` Phase 7A checklist on the deployed URL.
+
+## 2026-05-03 nFactorial project completion audit
+
+### Added
+
+- **`docs/ENGINEERING_AUDIT.md`:** full completion matrix (phases 0–8), feature inventory, deferred items, submission blockers, and **Strong**-level nFactorial assessment with evidence pointers.
+- **`docs/IMPLEMENTATION_PLAN.md`:** cross-reference to the audit under Phase 8.
+- **`docs/SMOKE_TEST.md`:** pre-Typeform submission checklist.
+
+### Notes
+
+- Audit is documentation-only; no application code or schema changes.
+- **Go / no-go** and README URL reminder summarized in ENGINEERING_AUDIT.
+
+## 2026-05-03 Phase 8A (Promotion picker)
+
+### Added
+
+- **Pawn promotion UI** on `ChessBoard`: chess.js verbose-move detection, shadcn **Dialog** with Queen / Rook / Bishop / Knight and Cancel; click-to-move and drag-to-square (drag snaps back until promotion is chosen). `onMove(from, to, promotion)` receives the selected piece letter (`q`/`r`/`b`/`n`).
+- **`docs/SMOKE_TEST.md`:** Phase 8A manual checklist (AI + online promotion).
+
+### Changed
+
+- **`docs/IMPLEMENTATION_PLAN.md`:** Phase 8A status under Phase 8.
