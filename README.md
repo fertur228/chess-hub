@@ -1,159 +1,192 @@
 # ChessCoach Arena
 
-Beginner-focused chess practice and online play built for the **nFactorial Incubator 2026** technical assignment submission.
+Beginner-first chess practice and online play — a **startup-style MVP** for the **nFactorial Incubator 2026** technical assignment.
 
 ---
 
 ## Submission links
 
-| Item | Link |
-|------|------|
-| **Live app** | `https://YOUR_DEPLOYMENT.workers.dev` (replace after Cloudflare deploy) |
-| **Source** | `https://github.com/YOUR_ORG/YOUR_REPO` |
+| | Link |
+|---|------|
+| **Live demo** | [https://chess-hub.almaz-bukayev.workers.dev/](https://chess-hub.almaz-bukayev.workers.dev/) |
+| **GitHub** | [https://github.com/fertur228/chess-hub](https://github.com/fertur228/chess-hub) |
 
 ---
 
-## What we built
+## Product summary
 
-**ChessCoach Arena** is a full-stack chess web app where new and casual players can sign up, complete a short onboarding, play against a built-in AI coach, find public opponents or invite friends to private rooms, and track progress with ratings and history. Completed games link to lightweight, coach-style reviews designed for readability—not engine depth.
+**ChessCoach Arena** is a modern web chess platform where people learn through play. Users can **sign in**, **onboard**, **play AI training games**, **play online** with friends or matchmade opponents (**casual** or **ranked**), see **legal-move hints** and board feedback (last move, check), **save** finished games, **review** them with readable coach-style summaries, and track **rating** plus **leaderboard** placement. A **cosmetic store** lets players spend **Arena Coins** on **board skins** and **avatar frames** (demo economy — see [Monetization](#monetization-philosophy)).
+
+---
+
+## More than a chessboard
+
+This is **not** only an 8×8 widget. It is a **full-stack product**: authentication, persisted profiles and games, client-side rules with **server-validated** online moves, **Realtime** room sync (with polling resilience), **trusted** game end and **ranked rating** logic on the backend, **matchmaking**, **draw offers**, **promotion picker**, **history**, **reviews**, and a **business-model prototype** (cosmetic coins) — aimed at **retention** and **learning**, not only moving pieces.
+
+---
 
 ## Who it is for
 
-- People learning chess who want a gentle place to play and see progress.
-- Casual players who want simple online rooms and a lightweight rating loop.
-- Friends who prefer private invite links over open ladders.
+- **Beginners** who want guidance and a calmer surface than “expert-only” sites.
+- **Casual players** who want simple online chess without friction.
+- **Friends** who prefer **private invite-code** rooms.
+- **Competitive players** who want **ranked** play via **public matchmaking** (private rooms stay casual by design).
 
-## Why it stands out
+---
 
-- **Beginner-first UX**: legal-move hints, last-move and check visuals on the shared board, and readable post-game summaries.
-- **Trust boundaries**: sensitive online moves, forfeits, and ranked outcomes flow through Supabase Edge Functions and database RPCs so clients cannot freely rewrite board state or ratings.
-- **Clear separation of modes**: AI training updates practice stats without touching Elo; ranked results only come from public matchmaking paths, with private rooms reserved for casual play.
+## Approach and story
 
-## Features
+I started from a **limited tournament chess background**, which pushed me to study the rules seriously and look at how established platforms serve different audiences. That research steered the product **toward beginners who need guidance**, not just a bare board. To ship a credible MVP quickly, I used an **AI-assisted / vibe coding** workflow (e.g. **Cursor**, **ChatGPT/Codex**) on top of strong primitives (**Supabase**, **TanStack**, **Cloudflare**). The goal was not a static demo — a **coherent, deployable prototype** that could grow into a real service.
 
-- Supabase authentication, profiles, and onboarding.
-- Dashboard, history, profile, leaderboard, and public profiles.
-- AI games with difficulty levels and deterministic client AI (no external engine binary).
-- Online play: create private rooms, join by code, public **Find Match** (casual or ranked).
-- Supabase Realtime for room sync; server-validated moves and trusted game end flows.
-- Post-game reviews for saved games.
-- **Cosmetic store (demo):** Arena Coins, board themes, and avatar frames via Supabase RPCs; **mock checkout only** (no real payments in MVP).
+---
+
+## Key features
+
+### Auth and profile
+
+- Email/password auth (**Supabase Auth**), **onboarding**, **profiles**, **settings** (preferences UI), **public profiles**.
+
+### AI training
+
+- **Play vs AI** with difficulty tiers; training games **do not change ranked Elo**; games can be **saved** and **reviewed**.
+
+### Board UX
+
+- **Legal-move hints** (dots / capture rings), **last-move** highlight, **check** highlight, **pawn promotion** picker (queen / rook / bishop / knight).
+
+### Online play
+
+- **Private rooms** (create + join by **code** or link).
+- **Public Find Match**: **casual** and **ranked** queues.
+- **Draw offers** (offer / accept / decline) via **trusted RPCs**.
+- **Resign** and **leave / abandon** flows via **Edge Functions** where applicable.
+
+### Progress and competition
+
+- **Game history**, **saved reviews** (readable summaries — not engine deep analysis).
+- **Rating** and **leaderboard**; **ranked** games are **not** created from **private** rooms (reduces rating farming).
+
+### Cosmetics and economy
+
+- **Arena Coins** (starting grant + **mock** “purchase” packs), **board skins**, **avatar frames**, equip loadout; **mock checkout only** — **no Stripe**, **no real payment processing** in this MVP.
+
+### Deployment
+
+- **Cloudflare Workers** (SSR + static assets), not Pages-only static hosting.
+
+---
+
+## Monetization philosophy
+
+- **Core learning stays free** in spirit: **AI training**, **online play**, **rating**, **leaderboard**, and **reviews** are **not** paywalled behind a subscription in this build.
+- **Monetization is cosmetic-only**: skins, frames, and **Arena Coins** as a **support-the-product** lane, **not** pay-to-win.
+- The live app includes a **demo store**: **mock checkout** records transactions in the database; **no real money** is charged. A future production version could connect a real payment provider **without** gating chess education.
+
+---
+
+## Security and trust
+
+- **Online moves** are validated **server-side** (**Edge Function**), not trusted from the browser alone.
+- **Game finish**, **forfeits**, and **ranked outcomes** flow through **Supabase RPCs / Edge Functions** with **idempotent** patterns where designed — clients do not arbitrarily `UPDATE` room state or ratings.
+- **Ranked private rooms are disabled** (database + product rule): **ranked** play is **public matchmaking only**, which **reduces intentional rating abuse**.
+- **Sensitive writes** (profiles, wallets, cosmetics, draws, etc.) use **RLS** plus **SECURITY DEFINER RPCs** (or functions) instead of wide-open table updates from the client.
+- **Service role** keys belong in **server/Edge** contexts only — **never** in `VITE_*` or the browser bundle.
+
+---
 
 ## Tech stack
 
-| Layer | Choice |
-|--------|--------|
-| App framework | [TanStack Start](https://tanstack.com/start) + [TanStack Router](https://tanstack.com/router) on [Vite 7](https://vite.dev/) |
-| UI | React 19, Tailwind CSS v4, Radix/shadcn-style primitives |
-| Chess rules / board | [chess.js](https://github.com/jhlywa/chess.js), [react-chessboard](https://github.com/Clariity/react-chessboard) |
-| Backend | [Supabase](https://supabase.com/) (Postgres, Auth, Realtime, Edge Functions) |
-| Deployment target | [Cloudflare Workers](https://developers.cloudflare.com/workers/) with static assets (`@cloudflare/vite-plugin`) |
+| Area | Choice |
+|------|--------|
+| App | **React** · **TanStack Start** / **TanStack Router** · **Vite** · **TypeScript** |
+| UI | **Tailwind CSS** · **shadcn-style** / **Radix** primitives |
+| Chess | **chess.js** · **react-chessboard** |
+| Backend | **Supabase** — **Auth**, **Postgres**, **Row Level Security**, **Realtime**, **Edge Functions** |
+| Deploy | **Cloudflare Workers** (`wrangler` · `wrangler.jsonc` / generated worker config) |
+| Package manager | **npm** (`package-lock.json`) |
 
-Configuration entry point: `vite.config.ts` uses `@lovable.dev/vite-tanstack-config` (TanStack Start + Cloudflare integration). There is no separate `app.config.ts` in this repo.
+---
 
-## Security and product decisions (high level)
+## Architecture overview
 
-- **Publishable vs service role**: the browser uses only `VITE_SUPABASE_*`. The Supabase **service role** key must never appear in `VITE_*` variables or client bundles. Edge Functions hold their own secrets in Supabase.
-- **Online integrity**: moves go through the `record-move` function; resign/abandon routes through `forfeit-game`; game and rating finalization uses server-side RPCs with idempotency guards where designed.
-- **Ranked abuse reduction**: ranked play is tied to public matchmaking; private rooms are casual-only at the UI and database level.
+- **Frontend**: file-based routes under `src/routes/`, shared UI in `src/components/`, auth context in `src/lib/auth.tsx`.
+- **Backend**: Supabase **Postgres** schema in `supabase/migrations/`, **RLS**, **RPCs** for trusted mutations.
+- **Realtime**: Supabase **channels** on `rooms` for live games; client may **poll** as a fallback.
+- **Edge Functions**: `record-move`, `forfeit-game` (deploy separately to your Supabase project).
+- **Deployment**: `vite build` outputs **`dist/client`** (assets) and **`dist/server`** (Worker bundle); Wrangler deploy uses the generated **`dist/server/wrangler.json`**.
 
-## Prerequisites
+---
 
-- **Node.js** 18+ (LTS recommended)
-- **npm** (project standard; use `package-lock.json`)
-- A **Supabase** project with migrations applied (`supabase/migrations`)
+## Local development
 
-## Run locally
-
-1. Clone the repository and install dependencies:
-
-   ```bash
-   npm install
-   ```
-
-2. Copy `.env.example` → `.env` and fill in your Supabase project URL and publishable key (and optional keys documented in `.env.example`).
-
-3. Start the dev server:
-
-   ```bash
-   npm run dev
-   ```
-
-   Default URL is documented in project smoke tests (`docs/SMOKE_TEST.md`).
-
-4. Production build:
-
-   ```bash
-   npm run build
-   ```
-
-## Environment variables
-
-### Required for production
-
-| Scope | Variables | Notes |
-|------|-----------|--------|
-| **Vite client (build-time)** | `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` | Must be set when running `npm run build` so the browser bundle embeds correct Supabase settings. Cloudflare Workers Builds should expose these as build environment variables (see Cloudflare docs on [`CLOUDFLARE_INCLUDE_PROCESS_ENV`](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/#build-settings) if needed). |
-| **Worker runtime** | `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` | Used by TanStack Start server code (e.g. Supabase middleware). Configure as Worker vars or secrets in the Cloudflare dashboard. |
-
-### Optional / special cases
-
-| Variable | Use |
-|---------|-----|
-| `SUPABASE_SERVICE_ROLE_KEY` | Only if server code imports the admin client in `src/integrations/supabase/client.server.ts`. Not used by current routes; **never** expose to the browser. |
-| `SUPABASE_ANON_KEY` | Primarily for local Supabase Edge Function development with the CLI. |
-
-Full template: `.env.example`.
-
-## Deploy to Cloudflare (Workers)
-
-This app is **not** Cloudflare Pages-only static hosting: it deploys as a **Worker** with **`dist/client`** as static assets and **`dist/server`** as the SSR bundle. After `vite build`, Wrangler reads the generated **`dist/server/wrangler.json`**.
-
-Exact commands:
+**Prerequisites:** Node.js **18+**, **npm**, a **Supabase** project with migrations applied.
 
 ```bash
 npm install
-# Set Supabase URLs/keys for the build (CI or local shell)
+cp .env.example .env   # then fill placeholders — never commit secrets
+npm run dev
+npm run build
+```
+
+### Environment variables (no secrets here)
+
+Copy **`.env.example`** → **`.env`**. At minimum:
+
+| Variable | Role |
+|----------|------|
+| `VITE_SUPABASE_URL` | Browser bundle (build-time) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Browser bundle (publishable / anon key only) |
+| `SUPABASE_URL` | Worker / server runtime |
+| `SUPABASE_PUBLISHABLE_KEY` | Worker / server runtime |
+
+Never put the **service role** key in `VITE_*`. See **`.env.example`** for Edge CLI and optional admin notes.
+
+---
+
+## Deployment (Cloudflare Workers)
+
+This app deploys as a **Worker** with SSR — **not** static Pages-only hosting.
+
+```bash
 npm run build
 npx wrangler deploy --config dist/server/wrangler.json
 ```
 
-Or use the npm script:
-
-```bash
-npm run deploy
-```
-
-Operational checklist:
-
-1. Log in once: `npx wrangler login`
-2. In the Cloudflare dashboard (or Wrangler), set **`SUPABASE_URL`** and **`SUPABASE_PUBLISHABLE_KEY`** on the Worker.
-3. Ensure **`VITE_SUPABASE_URL`** and **`VITE_SUPABASE_PUBLISHABLE_KEY`** are available during **`npm run build`** in CI.
-4. Deploy Supabase Edge Functions separately: `npx supabase functions deploy record-move`, `forfeit-game`, etc., against your Supabase project.
-
-Optional sanity check without uploading:
-
-```bash
-npm run build
-npx wrangler deploy --config dist/server/wrangler.json --dry-run
-```
-
-## Repository layout
-
-- `src/routes/` — file-based routes
-- `src/integrations/supabase/` — browser + server Supabase helpers
-- `supabase/` — migrations and Edge Functions
-- `docs/` — engineering plans, changelog, smoke tests
-
-## Documentation
-
-Detailed context lives under [`docs/README.md`](docs/README.md) (implementation plan, changelog, smoke tests, decisions).
-
-## Future roadmap (not in MVP scope)
-
-- Email confirmation UX, forgot-password flows, and loader-level route hardening (see `docs/IMPLEMENTATION_PLAN.md`).
-- Optional Stockfish-backed analysis later; optional monetization Stripe—explicitly **out of scope** for this assignment pass.
+Or: `npm run deploy` (build + deploy). Set **`SUPABASE_URL`** and **`SUPABASE_PUBLISHABLE_KEY`** on the Worker; supply **`VITE_*`** during **`npm run build`** so the client bundle points at the right project. Deploy **Supabase Edge Functions** (`record-move`, `forfeit-game`, …) to the same Supabase project the app uses.
 
 ---
 
-**Submission reminder:** Replace the placeholder **Live app** and **Source** URLs at the top of this file with your real Cloudflare Workers URL (`*.workers.dev` or custom domain) and GitHub repository URL before sending the assignment.
+## Implemented vs roadmap
+
+### Implemented (MVP / prototype)
+
+- AI training · online multiplayer · private + public matchmaking · ranked rating + leaderboard · draw offers · promotion picker · history · coach-style reviews · **cosmetic store + Arena Coins (mock payments)** · Cloudflare deployment
+
+### Future (explicitly not claimed here)
+
+- **Stockfish** (or similar) deep analysis
+- **Real** payment provider (e.g. production checkout)
+- City / club leaderboards
+- Chess **clocks** / standard time controls
+- Rich **avatar uploads** (beyond initials / frames)
+- Mobile-native polish
+- **Automated** test suite in CI
+- **Heartbeat / timeout** for silent hard disconnects
+
+---
+
+## nFactorial level alignment
+
+This submission targets the **Strong** bar and reaches toward **Great**: **Supabase** persistence and auth, **AI** play, **online** multiplayer (links + realtime), **public matchmaking**, AI-**style** review (not engine-backed), **leaderboard / rating**, a **business-model prototype** (cosmetics + mock coins), and a **live Cloudflare** deployment. It is a **prototype**, not a finished consumer product — but it is **architected** like one.
+
+---
+
+## Final note
+
+**ChessCoach Arena** is my attempt to turn a chess assignment into a **real product**: **beginner-friendly**, **fair**, **security-conscious**, and **monetizable** without locking learning behind a paywall.
+
+---
+
+## More documentation
+
+Engineering detail: **`docs/`** — implementation plan, changelog, smoke tests, architecture decisions (`docs/README.md`).

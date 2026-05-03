@@ -2,6 +2,12 @@
 
 All meaningful engineering changes should be recorded here.
 
+## 2026-05-06 Documentation (nFactorial submission)
+
+### Changed
+
+- **README.md:** Rewrote for final **nFactorial Incubator 2026** submission: live demo and GitHub links, product story, feature inventory aligned with the repo, monetization (cosmetic-only, mock checkout — no Stripe), **security/trust** summary, stack, local run and Cloudflare deploy commands, roadmap boundaries (no Stockfish / real payments / automated tests claims). No application code changes.
+
 ## 2026-05-02
 
 ### Changed
